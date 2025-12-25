@@ -1,37 +1,73 @@
-import React from 'react';
+import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ProductList from './components/ProductList';
+import Login from './components/Login';
+import Register from './components/Register';
+import Cart from './components/Cart';
+import ProductDetail from './components/ProductDetail';
+import Navbar from './components/Navbar';
+import type { User } from './services/api';
 import './App.css';
 
 function App() {
+  const [user, setUser] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  const handleLoginSuccess = (user: User) => {
+    setUser(user);
+    localStorage.setItem('user', JSON.stringify(user));
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+  };
+
   return (
-    <div className="App">
-      <header style={{
-        backgroundColor: '#2c3e50',
-        color: 'white',
-        padding: '20px',
-        textAlign: 'center',
-        marginBottom: '30px'
-      }}>
-        <h1 style={{ margin: '0', fontSize: '2.5em' }}>🛍️ 购物网站</h1>
-        <p style={{ margin: '10px 0 0 0', opacity: '0.8' }}>
-          发现优质商品，开启美好购物之旅
-        </p>
-      </header>
+    <Router>
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Navbar user={user} onLogout={handleLogout} />
 
-      <main>
-        <ProductList />
-      </main>
+        <main className="flex-grow container mx-auto px-4 py-8">
+          <Routes>
+            <Route 
+              path="/login" 
+              element={!user ? <Login onLoginSuccess={handleLoginSuccess} /> : <Navigate to="/products" />} 
+            />
+            
+            <Route 
+              path="/register" 
+              element={!user ? <Register /> : <Navigate to="/products" />} 
+            />
 
-      <footer style={{
-        textAlign: 'center',
-        padding: '20px',
-        backgroundColor: '#f8f9fa',
-        color: '#666',
-        marginTop: '50px'
-      }}>
-        <p>&copy; 2024 购物网站 Demo. 由 Spring Boot + React 构建</p>
-      </footer>
-    </div>
+            <Route 
+              path="/products" 
+              element={<ProductList user={user} />} 
+            />
+
+            <Route 
+              path="/product/:id" 
+              element={<ProductDetail user={user} />} 
+            />
+
+            <Route 
+              path="/cart" 
+              element={user ? <Cart user={user} /> : <Navigate to="/login" />} 
+            />
+
+            <Route path="/" element={<Navigate to="/products" />} />
+          </Routes>
+        </main>
+
+        <footer className="bg-white border-t border-gray-200 py-8 mt-auto">
+          <div className="container mx-auto px-4 text-center text-gray-500">
+            <p>&copy; 2024 ProShop Demo. 由 Spring Boot + React + Tailwind CSS 构建</p>
+          </div>
+        </footer>
+      </div>
+    </Router>
   );
 }
 

@@ -17,7 +17,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !price) {
-      alert('名称和价格必填');
+      alert('请输入商品名称和价格');
       return;
     }
 
@@ -31,7 +31,6 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
         stockQuantity: stockQuantity ? Number(stockQuantity) : undefined,
       });
       onCreated(newProduct);
-      // 清空表单
       setName('');
       setPrice('');
       setDescription('');
@@ -39,80 +38,87 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
       setStockQuantity('');
     } catch (err) {
       console.error('创建商品失败', err);
-      alert('创建商品失败，请检查后台日志');
+      alert('发布失败，请检查填写内容');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        maxWidth: 600,
-        margin: '0 auto 30px',
-        padding: '20px',
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
-      }}
-    >
-      <h3 style={{ marginBottom: '16px' }}>新增商品</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <input
-          placeholder="名称（必填）"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-        <input
-          type="number"
-          placeholder="价格（必填）"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-        <textarea
-          placeholder="描述"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={3}
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', resize: 'vertical' }}
-        />
-        <input
-          placeholder="图片 URL"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-        <input
-          type="number"
-          placeholder="库存数量"
-          value={stockQuantity}
-          onChange={(e) => setStockQuantity(e.target.value)}
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-      </div>
-      <button
-        type="submit"
-        disabled={submitting}
-        style={{
-          marginTop: '14px',
-          padding: '10px 16px',
-          backgroundColor: '#27ae60',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontSize: '15px',
-        }}
-      >
-        {submitting ? '提交中...' : '创建商品'}
-      </button>
-    </form>
+    <div className="bg-white p-8 rounded-3xl shadow-lg border border-gray-50 max-w-4xl mx-auto mb-10">
+      <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <span className="text-2xl">📦</span> 发布新商品
+      </h3>
+      
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">商品名称</label>
+            <input
+              placeholder="例如: iPhone 15 Pro"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">商品单价 (¥)</label>
+            <input
+              type="number"
+              placeholder="0.00"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">库存数量</label>
+            <input
+              type="number"
+              placeholder="默认 0"
+              value={stockQuantity}
+              onChange={(e) => setStockQuantity(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">商品描述</label>
+            <textarea
+              placeholder="请详细描述商品的特点和规格..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={4}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all resize-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">图片链接 URL</label>
+            <input
+              placeholder="https://..."
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        <div className="md:col-span-2 pt-4">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full md:w-auto px-10 py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-2xl shadow-lg shadow-primary-100 transition-all transform active:scale-95 disabled:opacity-50"
+          >
+            {submitting ? '发布中...' : '确认发布商品'}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 
 export default AddProductForm;
-
-
