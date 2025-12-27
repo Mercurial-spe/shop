@@ -57,7 +57,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated, sellerId }) 
           <div>
             <label className="block text-sm font-semibold text-slate-200 mb-2">商品名称</label>
             <input
-              placeholder="例如：ProShop 外套"
+              placeholder="例如：Mercurial's Shop 外套"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl focus:bg-white/10 focus:ring-2 focus:ring-cyan-200/60 focus:border-transparent outline-none transition-all text-white"

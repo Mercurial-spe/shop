@@ -103,7 +103,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
                 <path d="M9 22V12h6v10"></path>
               </svg>
             </span>
-            <span className="font-bold text-white tracking-wide">ProShop</span>
+            <span className="font-bold text-white tracking-wide">Mercurial's Shop</span>
           </Link>
           <Link to="/products" className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
             返回商城
@@ -212,7 +212,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
              ) : (
                <div className="flex flex-col">
                  <span className="text-2xl font-bold tracking-wide bg-gradient-to-r from-white via-cyan-100 to-cyan-300 bg-clip-text text-transparent drop-shadow-md">
-                   ProShop
+                   Mercurial's Shop
                  </span>
                </div>
              )}

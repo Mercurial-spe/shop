@@ -32,3 +32,30 @@ main {
   margin: 0 auto;
   width: 100%;
 }
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.main-content-wrapper {
+  flex: 1;
+}
+
+.site-footer {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.icp-link {
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+}
+
+.icp-link:hover {
+  color: #e2e8f0;
+}
