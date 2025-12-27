@@ -16,7 +16,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ filters, activeFilter, on
     <aside className="lg:sticky lg:top-28 h-fit">
       <div className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-transparent"></div>
-        <p className="relative text-xs text-gray-300 uppercase tracking-[0.4em] mb-5">Filter the vibe</p>
+        <p className="relative text-xs text-gray-300 uppercase tracking-[0.4em] mb-5">筛选</p>
         <div className="relative flex flex-col gap-2">
           {filters.map((filter) => {
             const isActive = activeFilter === filter.id;

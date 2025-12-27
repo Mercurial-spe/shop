@@ -63,7 +63,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-200 mb-2">Price (USD)</label>
+            <label className="block text-sm font-semibold text-slate-200 mb-2">价格 (¥)</label>
             <input
               type="number"
               placeholder="0.00"

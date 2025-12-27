@@ -47,6 +47,23 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
     }
   };
 
+  const handleBuyNow = async () => {
+    if (!user) {
+      alert('Please sign in first.');
+      navigate('/login');
+      return;
+    }
+    if (product) {
+      try {
+        const updated = await apiService.purchaseProduct(product.id, quantity);
+        setProduct(updated);
+        alert('购买成功。');
+      } catch (err) {
+        alert('购买失败，请稍后再试。');
+      }
+    }
+  };
+
   if (loading) return <div className="text-center py-20 text-slate-300">Loading product...</div>;
   if (!product) return <div className="text-center py-20 text-slate-300">Product not found.</div>;
 
@@ -70,10 +87,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
           <p className="text-lg text-slate-300 mb-8 leading-relaxed">{product.description}</p>
 
           <div className="flex items-baseline gap-4 mb-8">
-            <span className="text-4xl font-mono font-bold text-cyan-200">${product.price.toFixed(2)}</span>
+            <span className="text-4xl font-mono font-bold text-cyan-200">¥{product.price.toFixed(2)}</span>
             {product.stockQuantity != null && (
               <span className="text-sm text-slate-200 bg-white/10 px-3 py-1 rounded-full border border-white/20">
-                In stock: {product.stockQuantity}
+                库存: {product.stockQuantity}
               </span>
             )}
           </div>
@@ -99,7 +116,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
                 +
               </button>
             </div>
-            <span className="text-slate-400">Choose quantity</span>
+            <span className="text-slate-400">选择数量</span>
           </div>
 
           <div className="flex gap-4">
@@ -107,10 +124,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
               onClick={handleAddToCart}
               className="flex-1 py-4 bg-cyan-300 hover:bg-cyan-200 text-slate-900 text-lg font-bold rounded-2xl shadow-lg shadow-cyan-200/30 transition-all active:scale-95"
             >
-              Add to cart
+              加入购物车
             </button>
-            <button className="flex-1 py-4 border-2 border-cyan-200 text-cyan-200 hover:bg-cyan-200/10 text-lg font-bold rounded-2xl transition-all">
-              Buy now
+            <button
+              onClick={handleBuyNow}
+              className="flex-1 py-4 border-2 border-cyan-200 text-cyan-200 hover:bg-cyan-200/10 text-lg font-bold rounded-2xl transition-all"
+            >
+              立即购买
             </button>
           </div>
         </div>

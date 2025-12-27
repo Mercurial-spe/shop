@@ -60,9 +60,9 @@ const Cart: React.FC<CartProps> = ({ user }) => {
       <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-6 mb-10">
         <div>
           <Link to="/products" className="text-cyan-200 hover:text-cyan-100 font-semibold flex items-center gap-2 mb-2">
-            <span className="text-lg">&larr;</span> Continue shopping
+            <span className="text-lg">&larr;</span> 继续购物
           </Link>
-          <h2 className="text-3xl font-black text-white">Your cart</h2>
+          <h2 className="text-3xl font-black text-white">购物车</h2>
         </div>
 
         {items.length > 0 && (
@@ -70,7 +70,7 @@ const Cart: React.FC<CartProps> = ({ user }) => {
             onClick={handleClear}
             className="text-sm font-bold text-red-200 hover:text-white bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors"
           >
-            Clear cart
+            清空购物车
           </button>
         )}
       </div>
@@ -78,13 +78,13 @@ const Cart: React.FC<CartProps> = ({ user }) => {
       {items.length === 0 ? (
         <div className="bg-white/10 rounded-3xl p-20 text-center border border-white/20 backdrop-blur">
           <div className="text-7xl mb-6 text-cyan-200">+</div>
-          <h3 className="text-2xl font-bold text-white mb-4">Your cart is empty</h3>
-          <p className="text-slate-300 mb-8">Explore the catalog and build your next drop.</p>
+          <h3 className="text-2xl font-bold text-white mb-4">购物车还是空的</h3>
+          <p className="text-slate-300 mb-8">去挑选一些喜欢的商品吧。</p>
           <Link
             to="/products"
             className="px-8 py-3 bg-cyan-300 hover:bg-cyan-200 text-slate-900 font-bold rounded-xl shadow-lg shadow-cyan-200/30 transition-all inline-block"
           >
-            Browse products
+            逛逛商品
           </Link>
         </div>
       ) : (
@@ -101,19 +101,19 @@ const Cart: React.FC<CartProps> = ({ user }) => {
                   <h4 className="font-semibold text-white text-lg group-hover:text-cyan-200 transition-colors">
                     {item.product.name}
                   </h4>
-                  <p className="text-sm text-slate-400 mb-2">Unit price: <span className="font-mono text-cyan-200">${item.product.price.toFixed(2)}</span></p>
+                  <p className="text-sm text-slate-400 mb-2">单价: <span className="font-mono text-cyan-200">¥{item.product.price.toFixed(2)}</span></p>
                   <div className="flex items-center gap-4">
-                    <span className="text-sm font-medium text-slate-200 bg-white/10 px-3 py-1 rounded-md border border-white/10">Qty: {item.quantity}</span>
+                    <span className="text-sm font-medium text-slate-200 bg-white/10 px-3 py-1 rounded-md border border-white/10">数量: {item.quantity}</span>
                     <button
                       onClick={() => handleRemove(item.id)}
                       className="text-sm font-bold text-slate-400 hover:text-red-200 transition-colors"
                     >
-                      Remove
+                      移除
                     </button>
                   </div>
                 </div>
                 <div className="text-right pr-4">
-                  <p className="font-mono font-bold text-cyan-200 text-xl">${(item.product.price * item.quantity).toFixed(2)}</p>
+                  <p className="font-mono font-bold text-cyan-200 text-xl">¥{(item.product.price * item.quantity).toFixed(2)}</p>
                 </div>
               </div>
             ))}
@@ -121,29 +121,37 @@ const Cart: React.FC<CartProps> = ({ user }) => {
 
           <div className="lg:col-span-1">
             <div className="bg-white/10 rounded-3xl p-8 border border-white/20 backdrop-blur sticky top-28">
-              <h3 className="text-xl font-bold text-white mb-6 pb-4 border-b border-white/10">Order summary</h3>
+              <h3 className="text-xl font-bold text-white mb-6 pb-4 border-b border-white/10">订单概览</h3>
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between text-slate-300">
-                  <span>Items</span>
+                  <span>商品数量</span>
                   <span>{items.length}</span>
                 </div>
                 <div className="flex justify-between text-slate-300">
-                  <span>Shipping</span>
-                  <span className="text-cyan-200 font-bold">Free</span>
+                  <span>运费</span>
+                  <span className="text-cyan-200 font-bold">包邮</span>
                 </div>
                 <div className="h-px bg-white/10 my-4"></div>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-white font-bold">Total</span>
-                  <span className="text-3xl font-mono font-bold text-cyan-200">${totalPrice.toFixed(2)}</span>
+                  <span className="text-white font-bold">合计</span>
+                  <span className="text-3xl font-mono font-bold text-cyan-200">¥{totalPrice.toFixed(2)}</span>
                 </div>
               </div>
               <button
                 className="w-full py-4 bg-cyan-300 hover:bg-cyan-200 text-slate-900 text-lg font-bold rounded-2xl shadow-lg shadow-cyan-200/30 transition-all transform active:scale-95"
-                onClick={() => alert('Order submitted. Payment flow coming soon.')}
+                onClick={async () => {
+                  try {
+                    await apiService.checkoutCart(user.id);
+                    setItems([]);
+                    alert('订单已提交。');
+                  } catch (err) {
+                    alert('结算失败，请检查库存后重试。');
+                  }
+                }}
               >
-                Checkout
+                去结算
               </button>
-              <p className="text-center text-xs text-slate-400 mt-4">Secure checkout powered by ProShop demo.</p>
+              <p className="text-center text-xs text-slate-400 mt-4">支付流程即将上线。</p>
             </div>
           </div>
         </div>

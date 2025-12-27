@@ -4,6 +4,7 @@ import com.example.shop_backend.model.Product;
 import com.example.shop_backend.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +43,21 @@ public class ProductService {
             productRepository.delete(product);
             return true;
         }).orElse(false);
+    }
+
+    @Transactional
+    public Optional<Product> purchaseProduct(Long id, int quantity) {
+        return productRepository.findById(id).map(product -> {
+            Integer stock = product.getStockQuantity();
+            if (stock != null) {
+                int remaining = stock - quantity;
+                if (remaining < 0) {
+                    throw new RuntimeException("Insufficient stock");
+                }
+                product.setStockQuantity(remaining);
+            }
+            return productRepository.save(product);
+        });
     }
 }
 

@@ -53,6 +53,13 @@ class ApiService {
     if (!response.ok) throw new Error('Delete failed');
   }
 
+  async purchaseProduct(productId: number, quantity: number = 1): Promise<Product> {
+    return this.request<Product>(`/products/${productId}/purchase`, {
+      method: 'POST',
+      body: JSON.stringify({ quantity }),
+    });
+  }
+
   // --- Auth ---
   async login(username: string, password: string): Promise<User> {
     return this.request<User>('/auth/login', {
@@ -90,6 +97,12 @@ class ApiService {
     const url = `${API_BASE_URL}/cart/${userId}/clear`;
     const response = await fetch(url, { method: 'DELETE' });
     if (!response.ok) throw new Error('Clear cart failed');
+  }
+
+  async checkoutCart(userId: number): Promise<void> {
+    const url = `${API_BASE_URL}/cart/${userId}/checkout`;
+    const response = await fetch(url, { method: 'POST' });
+    if (!response.ok) throw new Error('Checkout failed');
   }
 }
 

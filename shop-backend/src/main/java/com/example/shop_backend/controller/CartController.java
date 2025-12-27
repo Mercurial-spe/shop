@@ -51,4 +51,14 @@ public class CartController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PostMapping("/{userId}/checkout")
+    public ResponseEntity<?> checkout(@PathVariable Long userId) {
+        try {
+            cartService.checkout(userId);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

@@ -1,4 +1,4 @@
-package com.example.shop_backend.service;
+﻿package com.example.shop_backend.service;
 
 import com.example.shop_backend.model.CartItem;
 import com.example.shop_backend.model.Product;
@@ -26,13 +26,13 @@ public class CartService {
     private ProductRepository productRepository;
 
     public List<CartItem> getCartByUser(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         return cartItemRepository.findByUser(user);
     }
 
     public CartItem addToCart(Long userId, Long productId, Integer quantity) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
-        Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("商品不存在"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
 
         Optional<CartItem> existingItem = cartItemRepository.findByUserAndProductId(user, productId);
 
@@ -55,8 +55,29 @@ public class CartService {
 
     @Transactional
     public void clearCart(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        cartItemRepository.deleteByUser(user);
+    }
+
+    @Transactional
+    public void checkout(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        List<CartItem> items = cartItemRepository.findByUser(user);
+
+        for (CartItem item : items) {
+            Product product = item.getProduct();
+            Integer stock = product.getStockQuantity();
+            if (stock == null) {
+                continue;
+            }
+            int remaining = stock - item.getQuantity();
+            if (remaining < 0) {
+                throw new RuntimeException("Insufficient stock");
+            }
+            product.setStockQuantity(remaining);
+            productRepository.save(product);
+        }
+
         cartItemRepository.deleteByUser(user);
     }
 }
-

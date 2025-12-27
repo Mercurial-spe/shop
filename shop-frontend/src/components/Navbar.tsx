@@ -22,7 +22,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
 
   const menuItems = [
     {
-      label: 'Products',
+      label: '商品',
       path: '/products',
       icon: (
         <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -34,7 +34,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
     },
     ...(user ? [
       {
-        label: 'Cart',
+        label: '购物车',
         path: '/cart',
         icon: (
           <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -45,7 +45,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
         )
       },
       {
-        label: 'Logout',
+        label: '退出',
         action: handleLogout,
         icon: (
           <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -57,7 +57,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
       }
     ] : [
       {
-        label: 'Sign In',
+        label: '登录',
         path: '/login',
         icon: (
           <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -84,7 +84,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
             <span className="font-bold text-white tracking-wide">ProShop</span>
           </Link>
           <Link to="/products" className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
-            Back to Store
+            返回商城
           </Link>
         </div>
       </nav>
@@ -181,7 +181,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
              {user ? (
                <div className="flex flex-col">
                   <span className="text-xs font-semibold text-cyan-300 uppercase tracking-widest mb-0.5">
-                    Welcome back
+                    欢迎回来
                   </span>
                   <span className="text-2xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
                     {user.username}
@@ -197,7 +197,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
              <div className="flex items-center gap-2 mt-1">
                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]"></div>
                <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-slate-400">
-                 Click to Navigate
+                 点击进入
                </span>
              </div>
           </motion.div>

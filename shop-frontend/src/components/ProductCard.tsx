@@ -68,7 +68,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onAddToCar
           <Link to={`/product/${product.id}`} className="hover:text-cyan-200 transition-colors">
             <h3 className="text-lg font-semibold font-sans text-slate-100 leading-tight line-clamp-2">{product.name}</h3>
           </Link>
-          <span className="text-2xl font-mono font-bold text-cyan-200 drop-shadow-sm">${product.price.toFixed(2)}</span>
+          <span className="text-2xl font-mono font-bold text-cyan-200 drop-shadow-sm">¥{product.price.toFixed(2)}</span>
         </div>
 
         <p className="text-sm text-slate-300 line-clamp-2 mb-4 flex-grow">

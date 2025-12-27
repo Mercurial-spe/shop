@@ -66,12 +66,12 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   };
 
   const filters = [
-    { id: 'all', label: 'All Picks', predicate: () => true },
-    { id: 'budget', label: 'Budget', predicate: (product: Product) => product.price < 30 },
-    { id: 'premium', label: 'Premium', predicate: (product: Product) => product.price >= 120 },
+    { id: 'all', label: '精选', predicate: () => true },
+    { id: 'budget', label: '平价', predicate: (product: Product) => product.price < 30 },
+    { id: 'premium', label: '高端', predicate: (product: Product) => product.price >= 120 },
     {
       id: 'low-stock',
-      label: 'Low Stock',
+      label: '库存紧张',
       predicate: (product: Product) => (product.stockQuantity ?? 0) > 0 && (product.stockQuantity ?? 0) <= 5
     }
   ];
@@ -108,10 +108,10 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
       <div className="flex flex-col md:flex-row justify-between items-end gap-6 px-2">
         <div className="relative group">
           <h2 className="text-5xl md:text-6xl font-snow bg-gradient-to-r from-white via-cyan-200 to-cyan-400 bg-clip-text text-transparent py-2">
-            Curated Picks
+            精选推荐
           </h2>
           <div className="absolute -bottom-1 left-0 w-1/3 h-1.5 bg-cyan-300 rounded-full transform origin-left group-hover:w-full transition-all duration-500"></div>
-          <p className="text-slate-400 mt-2 font-medium tracking-[0.35em] uppercase text-xs">Signals of quality</p>
+          <p className="text-slate-400 mt-2 font-medium tracking-[0.35em] uppercase text-xs">品质信号</p>
         </div>
 
         <button
@@ -122,7 +122,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
               : 'bg-cyan-300 text-slate-900 hover:bg-cyan-200 shadow-cyan-200/30'
           }`}
         >
-          {showAddForm ? 'Close editor' : 'Add a product'}
+            {showAddForm ? '关闭编辑' : '发布商品'}
         </button>
       </div>
 
@@ -170,8 +170,8 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
       {products.length === 0 && !showAddForm && (
         <div className="text-center py-32 bg-white/10 rounded-3xl border border-white/20">
           <div className="text-6xl mb-6 text-cyan-200">+</div>
-          <h3 className="text-xl font-bold text-white mb-2">No products yet</h3>
-          <p className="text-slate-300">Create your first drop to get started.</p>
+          <h3 className="text-xl font-bold text-white mb-2">暂无商品</h3>
+          <p className="text-slate-300">发布你的第一件商品吧。</p>
         </div>
       )}
     </div>

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
@@ -46,6 +47,18 @@ public class ProductController {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/{id}/purchase")
+    public ResponseEntity<?> purchaseProduct(@PathVariable Long id, @RequestBody Map<String, Integer> payload) {
+        Integer quantity = payload.getOrDefault("quantity", 1);
+        try {
+            return productService.purchaseProduct(id, quantity)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }
