@@ -1,10 +1,12 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import type { Product } from '../types/Product';
 import { apiService } from '../services/api';
 import type { User } from '../services/api';
 import ProductCard from './ProductCard';
 import AddProductForm from './AddProductForm';
+import FilterSidebar from './FilterSidebar';
 
 interface ProductListProps {
   user: User | null;
@@ -16,6 +18,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
+  const [hasInteracted, setHasInteracted] = useState(false);
   const navigate = useNavigate();
 
   const loadProducts = async () => {
@@ -76,63 +79,51 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   const activePredicate = filters.find((filter) => filter.id === activeFilter)?.predicate ?? filters[0].predicate;
   const visibleProducts = products.filter(activePredicate);
 
+  const containerVariants = hasInteracted
+    ? { hidden: {}, show: {} }
+    : { hidden: {}, show: { transition: { staggerChildren: 0.12 } } };
+
+  const cardVariants = hasInteracted
+    ? { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.12 } } }
+    : { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: 'easeOut' } } };
+
   if (loading) return (
-    <div className="flex flex-col items-center justify-center py-20 space-y-4">
-      <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
-      <p className="text-gray-500 font-medium">Curating the catalog...</p>
+    <div className="flex flex-col items-center justify-center py-20 space-y-4 text-slate-300">
+      <div className="w-12 h-12 border-4 border-white/20 border-t-cyan-300 rounded-full animate-spin"></div>
+      <p className="font-medium">Curating the catalog...</p>
     </div>
   );
 
   if (error) return (
-    <div className="text-center py-20 bg-red-50 rounded-2xl border border-red-100 max-w-2xl mx-auto px-4">
-      <div className="text-6xl mb-4 text-red-500">!</div>
-      <h3 className="text-3xl font-bold text-red-600 mb-2 tracking-widest">{error}</h3>
-      <p className="text-red-600 mb-6 font-mono text-sm">Please check if backend service is running on port 8080</p>
-      <button onClick={loadProducts} className="px-6 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors">RETRY</button>
+    <div className="text-center py-20 bg-white/10 rounded-2xl border border-white/20 max-w-2xl mx-auto px-4 text-slate-200 backdrop-blur">
+      <div className="text-6xl mb-4 text-cyan-200">!</div>
+      <h3 className="text-3xl font-bold text-cyan-100 mb-2 tracking-widest">{error}</h3>
+      <p className="text-slate-300 mb-6 font-mono text-sm">Please check if backend service is running on port 8080</p>
+      <button onClick={loadProducts} className="px-6 py-2 bg-cyan-300 text-slate-900 rounded-lg font-bold hover:bg-cyan-200 transition-colors">Retry</button>
     </div>
   );
 
   return (
-    <div className="space-y-10">
-      <div className="flex flex-col gap-8">
-        <div className="flex flex-col md:flex-row justify-between items-start gap-6">
-          <div className="relative group">
-            <h2 className="text-5xl md:text-6xl font-snow bg-gradient-to-r from-gray-900 via-primary-700 to-primary-500 bg-clip-text text-transparent py-2">
-              Curated Picks
-            </h2>
-            <div className="absolute -bottom-1 left-0 w-1/3 h-1.5 bg-primary-500 rounded-full transform origin-left group-hover:w-full transition-all duration-500"></div>
-            <p className="text-gray-400 mt-2 font-medium tracking-[0.35em] uppercase text-xs">Signals of quality</p>
-          </div>
-
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-md ${
-              showAddForm
-                ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                : 'bg-primary-600 text-white hover:bg-primary-700 shadow-primary-100'
-            }`}
-          >
-            {showAddForm ? 'Close editor' : 'Add a product'}
-          </button>
+    <div className="space-y-12">
+      <div className="flex flex-col md:flex-row justify-between items-end gap-6 px-2">
+        <div className="relative group">
+          <h2 className="text-5xl md:text-6xl font-snow bg-gradient-to-r from-white via-cyan-200 to-cyan-400 bg-clip-text text-transparent py-2">
+            Curated Picks
+          </h2>
+          <div className="absolute -bottom-1 left-0 w-1/3 h-1.5 bg-cyan-300 rounded-full transform origin-left group-hover:w-full transition-all duration-500"></div>
+          <p className="text-slate-400 mt-2 font-medium tracking-[0.35em] uppercase text-xs">Signals of quality</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          {filters.map((filter) => (
-            <button
-              key={filter.id}
-              type="button"
-              onClick={() => setActiveFilter(filter.id)}
-              className={`px-4 py-2 rounded-full text-sm font-bold uppercase tracking-widest transition-all ${
-                activeFilter === filter.id
-                  ? 'bg-primary-600 text-white shadow-lg shadow-primary-200'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:border-primary-200 hover:text-primary-600'
-              }`}
-            >
-              {filter.label}
-            </button>
-          ))}
-          <span className="text-xs text-gray-400 uppercase tracking-[0.35em]">Filter the vibe</span>
-        </div>
+        <button
+          onClick={() => setShowAddForm(!showAddForm)}
+          className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-md border border-white/20 backdrop-blur ${
+            showAddForm
+              ? 'bg-white/20 text-white hover:bg-white/30'
+              : 'bg-cyan-300 text-slate-900 hover:bg-cyan-200 shadow-cyan-200/30'
+          }`}
+        >
+          {showAddForm ? 'Close editor' : 'Add a product'}
+        </button>
       </div>
 
       {showAddForm && (
@@ -141,22 +132,46 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 justify-items-center">
-        {visibleProducts.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onDelete={handleDelete}
-            onAddToCart={handleAddToCart}
-          />
-        ))}
+      <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-8">
+        <FilterSidebar
+          filters={filters}
+          activeFilter={activeFilter}
+          onSelect={(id) => {
+            setHasInteracted(true);
+            setActiveFilter(id);
+          }}
+        />
+
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6"
+        >
+          {visibleProducts.map((product) => (
+            <motion.div
+              key={product.id}
+              variants={cardVariants}
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: 'spring', stiffness: 240, damping: 20 }}
+              className="w-full h-full"
+            >
+              <ProductCard
+                product={product}
+                onDelete={handleDelete}
+                onAddToCart={handleAddToCart}
+                className="w-full h-full"
+              />
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
 
       {products.length === 0 && !showAddForm && (
-        <div className="text-center py-32 bg-white rounded-3xl border-2 border-dashed border-gray-100">
-          <div className="text-6xl mb-6">+</div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">No products yet</h3>
-          <p className="text-gray-500">Create your first drop to get started.</p>
+        <div className="text-center py-32 bg-white/10 rounded-3xl border border-white/20">
+          <div className="text-6xl mb-6 text-cyan-200">+</div>
+          <h3 className="text-xl font-bold text-white mb-2">No products yet</h3>
+          <p className="text-slate-300">Create your first drop to get started.</p>
         </div>
       )}
     </div>

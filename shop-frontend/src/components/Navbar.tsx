@@ -1,5 +1,6 @@
-﻿import React from 'react';
+﻿import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { User } from '../services/api';
 
 interface NavbarProps {
@@ -10,96 +11,199 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const isAuthPage = ['/login', '/register'].includes(location.pathname);
 
   const handleLogout = () => {
     onLogout();
     navigate('/login');
   };
 
-  const isActive = (path: string) => location.pathname === path;
+  const menuItems = [
+    {
+      label: 'Products',
+      path: '/products',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 7h18"></path>
+          <path d="M6 7l1 12h10l1-12"></path>
+          <path d="M9 7V5a3 3 0 0 1 6 0v2"></path>
+        </svg>
+      )
+    },
+    ...(user ? [
+      {
+        label: 'Cart',
+        path: '/cart',
+        icon: (
+          <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 6h15l-1.5 9h-12z"></path>
+            <circle cx="9" cy="20" r="1"></circle>
+            <circle cx="18" cy="20" r="1"></circle>
+          </svg>
+        )
+      },
+      {
+        label: 'Logout',
+        action: handleLogout,
+        icon: (
+          <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <path d="M16 17l5-5-5-5"></path>
+            <path d="M21 12H9"></path>
+          </svg>
+        )
+      }
+    ] : [
+      {
+        label: 'Sign In',
+        path: '/login',
+        icon: (
+          <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+            <path d="M10 17l5-5-5-5"></path>
+            <path d="M15 12H3"></path>
+          </svg>
+        )
+      }
+    ])
+  ];
 
-  const getLinkClass = (path: string) => {
-    const baseClass = 'flex items-center gap-2 px-4 py-2 text-sm font-chicken font-bold rounded-xl transition-all group';
-    const activeClass = 'text-primary-600 bg-primary-50 shadow-sm shadow-primary-100/50 ring-1 ring-primary-100';
-    const inactiveClass = 'text-gray-600 hover:text-primary-600 hover:bg-primary-50';
-
-    return `${baseClass} ${isActive(path) ? activeClass : inactiveClass}`;
-  };
+  if (isAuthPage) {
+    return (
+      <nav className="fixed top-4 left-0 right-0 z-50 px-4">
+        <div className="mx-auto max-w-7xl rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg py-3 px-6 flex justify-between items-center">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9l9-6 9 6"></path>
+                <path d="M9 22V12h6v10"></path>
+              </svg>
+            </span>
+            <span className="font-bold text-white tracking-wide">ProShop</span>
+          </Link>
+          <Link to="/products" className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
+            Back to Store
+          </Link>
+        </div>
+      </nav>
+    );
+  }
 
   return (
-    <nav className="bg-white/90 backdrop-blur shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 flex items-center gap-3 group">
-              <span className="flex items-center justify-center w-10 h-10 rounded-2xl bg-primary-50 text-primary-600 shadow-sm shadow-primary-100/50">
-                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 9l9-6 9 6"></path>
-                  <path d="M9 22V12h6v10"></path>
-                </svg>
-              </span>
-              <span className="text-2xl font-starborn text-primary-600 tracking-wider group-hover:text-primary-700 transition-colors">
-                ProShop
-              </span>
-            </Link>
-          </div>
+    <div className="fixed bottom-10 left-10 z-50 flex items-end">
+      {/* Radial Menu Items */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {menuItems.map((item, index) => {
+              const angle = -90 + (index * (90 / (menuItems.length - 1 || 1))); // Distribute from -90 (top) to 0 (right)
+              const radius = 100; // Distance from center
+              const x = Math.cos((angle * Math.PI) / 180) * radius;
+              const y = Math.sin((angle * Math.PI) / 180) * radius;
 
-          <div className="flex items-center gap-2">
-            <Link to="/products" className={getLinkClass('/products')}>
-              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 7h18"></path>
-                <path d="M6 7l1 12h10l1-12"></path>
-                <path d="M9 7V5a3 3 0 0 1 6 0v2"></path>
-              </svg>
-              <span>Products</span>
-            </Link>
+              return (
+                <motion.div
+                  key={item.label}
+                  initial={{ opacity: 0, x: 0, y: 0, scale: 0 }}
+                  animate={{ opacity: 1, x, y, scale: 1 }}
+                  exit={{ opacity: 0, x: 0, y: 0, scale: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 20, delay: index * 0.05 }}
+                  className="absolute bottom-0 left-0"
+                  style={{ transformOrigin: 'bottom left' }}
+                >
+                  <div className="relative group">
+                    {item.path ? (
+                      <Link
+                        to={item.path}
+                        className="flex items-center justify-center w-14 h-14 rounded-full bg-slate-900/90 border border-cyan-500/30 text-cyan-300 shadow-lg shadow-cyan-500/20 hover:bg-cyan-500 hover:text-white hover:scale-110 transition-all duration-300"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        {item.icon}
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          item.action?.();
+                          setIsOpen(false);
+                        }}
+                        className="flex items-center justify-center w-14 h-14 rounded-full bg-slate-900/90 border border-red-500/30 text-red-300 shadow-lg shadow-red-500/20 hover:bg-red-500 hover:text-white hover:scale-110 transition-all duration-300"
+                      >
+                        {item.icon}
+                      </button>
+                    )}
+                    
+                    {/* Tooltip */}
+                    <div className="absolute left-1/2 -translate-x-1/2 -top-10 px-3 py-1 bg-black/80 text-white text-xs font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none backdrop-blur-sm border border-white/10">
+                      {item.label}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </>
+        )}
+      </AnimatePresence>
 
-            {user ? (
-              <div className="flex items-center gap-2">
-                <Link to="/cart" className={getLinkClass('/cart')}>
-                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 6h15l-1.5 9h-12z"></path>
-                    <circle cx="9" cy="20" r="1"></circle>
-                    <circle cx="18" cy="20" r="1"></circle>
-                  </svg>
-                  <span className="hidden sm:inline">Cart</span>
-                </Link>
-                <div className="h-4 w-px bg-gray-200 mx-1"></div>
-                <div className="flex items-center gap-3 pl-1">
-                  <span className="text-sm text-gray-500">
-                    Hello, <span className="font-bold text-gray-800">{user.username}</span>
-                  </span>
-                  <button
-                    onClick={handleLogout}
-                    className="px-4 py-2 text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-all active:scale-95"
-                  >
-                    Sign out
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link to="/login" className={getLinkClass('/login')}>
-                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                    <path d="M10 17l5-5-5-5"></path>
-                    <path d="M15 12H3"></path>
-                  </svg>
-                  <span>Sign in</span>
-                </Link>
-                <Link to="/register" className={getLinkClass('/register')}>
-                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 5v14"></path>
-                    <path d="M5 12h14"></path>
-                  </svg>
-                  <span>Register</span>
-                </Link>
-              </div>
-            )}
-          </div>
+      {/* Main Trigger Button */}
+      <motion.button
+        onClick={() => setIsOpen(!isOpen)}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="relative z-50 flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-[0_0_30px_rgba(34,211,238,0.4)] ring-2 ring-white/20 hover:shadow-[0_0_50px_rgba(34,211,238,0.6)] transition-all duration-300 group"
+      >
+        <div className={`transition-transform duration-300 ${isOpen ? 'rotate-45' : 'rotate-0'}`}>
+          {isOpen ? (
+            <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18M6 6l12 12"></path>
+            </svg>
+          ) : (
+             <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+               <path d="M3 9l9-6 9 6"></path>
+               <path d="M9 22V12h6v10"></path>
+             </svg>
+          )}
         </div>
-      </div>
-    </nav>
+        {/* Pulse Effect */}
+        <span className="absolute inset-0 rounded-full bg-white/20 animate-ping opacity-20"></span>
+      </motion.button>
+      
+      {/* Label when closed */}
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.div
+             initial={{ opacity: 0, x: -10 }}
+             animate={{ opacity: 1, x: 0 }}
+             exit={{ opacity: 0, x: -10, transition: { duration: 0.2 } }}
+             className="absolute left-24 bottom-0 h-16 flex flex-col justify-center pointer-events-none whitespace-nowrap"
+          >
+             {user ? (
+               <div className="flex flex-col">
+                  <span className="text-xs font-semibold text-cyan-300 uppercase tracking-widest mb-0.5">
+                    Welcome back
+                  </span>
+                  <span className="text-2xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                    {user.username}
+                  </span>
+               </div>
+             ) : (
+               <div className="flex flex-col">
+                 <span className="text-2xl font-bold tracking-wide bg-gradient-to-r from-white via-cyan-100 to-cyan-300 bg-clip-text text-transparent drop-shadow-md">
+                   ProShop
+                 </span>
+               </div>
+             )}
+             <div className="flex items-center gap-2 mt-1">
+               <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]"></div>
+               <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-slate-400">
+                 Click to Navigate
+               </span>
+             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import type { Product } from '../types/Product';
 import { apiService } from '../services/api';
 
@@ -17,7 +17,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !price) {
-      alert('请输入商品名称和价格');
+      alert('Please enter a name and price.');
       return;
     }
 
@@ -37,72 +37,72 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
       setImageUrl('');
       setStockQuantity('');
     } catch (err) {
-      console.error('创建商品失败', err);
-      alert('发布失败，请检查填写内容');
+      console.error('Failed to create product', err);
+      alert('Publish failed. Please check your inputs.');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="bg-white p-8 rounded-3xl shadow-lg border border-gray-50 max-w-4xl mx-auto mb-10">
-      <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-        <span className="text-2xl">📦</span> 发布新商品
+    <div className="bg-white/10 p-8 rounded-3xl border border-white/20 backdrop-blur max-w-4xl mx-auto mb-10">
+      <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+        <span className="text-2xl text-cyan-200">+</span> New product
       </h3>
-      
+
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">商品名称</label>
+            <label className="block text-sm font-semibold text-slate-200 mb-2">Product name</label>
             <input
-              placeholder="例如: iPhone 15 Pro"
+              placeholder="Example: Pro Shop Jacket"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl focus:bg-white/10 focus:ring-2 focus:ring-cyan-200/60 focus:border-transparent outline-none transition-all text-white"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">商品单价 (¥)</label>
+            <label className="block text-sm font-semibold text-slate-200 mb-2">Price (USD)</label>
             <input
               type="number"
               placeholder="0.00"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl focus:bg-white/10 focus:ring-2 focus:ring-cyan-200/60 focus:border-transparent outline-none transition-all text-white"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">库存数量</label>
+            <label className="block text-sm font-semibold text-slate-200 mb-2">Stock</label>
             <input
               type="number"
-              placeholder="默认 0"
+              placeholder="Optional"
               value={stockQuantity}
               onChange={(e) => setStockQuantity(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl focus:bg-white/10 focus:ring-2 focus:ring-cyan-200/60 focus:border-transparent outline-none transition-all text-white"
             />
           </div>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">商品描述</label>
+            <label className="block text-sm font-semibold text-slate-200 mb-2">Description</label>
             <textarea
-              placeholder="请详细描述商品的特点和规格..."
+              placeholder="Describe the product details, materials, and story."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all resize-none"
+              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl focus:bg-white/10 focus:ring-2 focus:ring-cyan-200/60 focus:border-transparent outline-none transition-all resize-none text-white"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">图片链接 URL</label>
+            <label className="block text-sm font-semibold text-slate-200 mb-2">Image URL</label>
             <input
               placeholder="https://..."
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl focus:bg-white/10 focus:ring-2 focus:ring-cyan-200/60 focus:border-transparent outline-none transition-all text-white"
             />
           </div>
         </div>
@@ -111,9 +111,9 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full md:w-auto px-10 py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-2xl shadow-lg shadow-primary-100 transition-all transform active:scale-95 disabled:opacity-50"
+            className="w-full md:w-auto px-10 py-4 bg-cyan-300 hover:bg-cyan-200 text-slate-900 font-bold rounded-2xl shadow-lg shadow-cyan-200/30 transition-all transform active:scale-95 disabled:opacity-50"
           >
-            {submitting ? '发布中...' : '确认发布商品'}
+            {submitting ? 'Publishing...' : 'Publish product'}
           </button>
         </div>
       </form>
