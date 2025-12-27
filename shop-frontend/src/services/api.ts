@@ -5,6 +5,7 @@ const API_BASE_URL = 'http://localhost:8080/api';
 export interface User {
   id: number;
   username: string;
+  role: 'CUSTOMER' | 'SELLER';
 }
 
 export interface CartItem {
@@ -40,11 +41,15 @@ class ApiService {
     return this.request<Product>(`/products/${id}`);
   }
 
-  async createProduct(product: Omit<Product, 'id'>): Promise<Product> {
+  async createProduct(product: Omit<Product, 'id'> & { sellerId: number }): Promise<Product> {
     return this.request<Product>('/products', {
       method: 'POST',
       body: JSON.stringify(product),
     });
+  }
+
+  async getProductsBySeller(sellerId: number): Promise<Product[]> {
+    return this.request<Product[]>(`/products/seller/${sellerId}`);
   }
 
   async deleteProduct(id: number): Promise<void> {
@@ -53,10 +58,17 @@ class ApiService {
     if (!response.ok) throw new Error('Delete failed');
   }
 
-  async purchaseProduct(productId: number, quantity: number = 1): Promise<Product> {
-    return this.request<Product>(`/products/${productId}/purchase`, {
+  async updateProduct(id: number, updates: Partial<Product>): Promise<Product> {
+    return this.request<Product>(`/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async purchaseProduct(productId: number, userId: number, quantity: number = 1): Promise<any> {
+    return this.request<any>(`/products/${productId}/purchase`, {
       method: 'POST',
-      body: JSON.stringify({ quantity }),
+      body: JSON.stringify({ quantity, userId }),
     });
   }
 
@@ -68,10 +80,10 @@ class ApiService {
     });
   }
 
-  async register(username: string, password: string): Promise<User> {
+  async register(username: string, password: string, role: 'CUSTOMER' | 'SELLER'): Promise<User> {
     return this.request<User>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, role }),
     });
   }
 
@@ -103,6 +115,18 @@ class ApiService {
     const url = `${API_BASE_URL}/cart/${userId}/checkout`;
     const response = await fetch(url, { method: 'POST' });
     if (!response.ok) throw new Error('Checkout failed');
+  }
+
+  async getOrdersByUser(userId: number): Promise<any[]> {
+    return this.request<any[]>(`/orders/user/${userId}`);
+  }
+
+  async getOrdersBySeller(sellerId: number): Promise<any[]> {
+    return this.request<any[]>(`/orders/seller/${sellerId}`);
+  }
+
+  async getSellerStats(sellerId: number): Promise<any> {
+    return this.request<any>(`/orders/seller/${sellerId}/stats`);
   }
 }
 

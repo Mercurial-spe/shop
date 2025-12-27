@@ -5,6 +5,8 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Cart from './components/Cart';
 import ProductDetail from './components/ProductDetail';
+import Orders from './components/Orders';
+import SellerDashboard from './components/SellerDashboard';
 import Navbar from './components/Navbar';
 import InteractiveBackground from './components/InteractiveBackground';
 import CustomCursor from './components/CustomCursor';
@@ -14,7 +16,9 @@ import './App.css';
 function AppContent() {
   const [user, setUser] = useState<User | null>(() => {
     const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
+    if (!savedUser) return null;
+    const parsed = JSON.parse(savedUser);
+    return { role: 'CUSTOMER', ...parsed } as User;
   });
 
   const location = useLocation();
@@ -83,13 +87,31 @@ function AppContent() {
             }
           />
 
+          <Route
+            path="/orders"
+            element={
+              <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full">
+                {user ? <Orders user={user} /> : <Navigate to="/login" />}
+              </div>
+            }
+          />
+
+          <Route
+            path="/seller"
+            element={
+              <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full">
+                {user?.role === 'SELLER' ? <SellerDashboard user={user} /> : <Navigate to="/products" />}
+              </div>
+            }
+          />
+
           <Route path="/" element={<Navigate to={user ? '/products' : '/login'} />} />
         </Routes>
       </main>
 
       <footer className="bg-white/5 border-t border-white/10 py-8 mt-auto backdrop-blur">
         <div className="container mx-auto px-4 text-center text-slate-400">
-          <p>&copy; 2024 ProShop Demo. Built with Spring Boot + React + Tailwind CSS.</p>
+          <p>&copy; 2024 ProShop Demo. 基于 Spring Boot + React + Tailwind CSS 构建。</p>
         </div>
       </footer>
     </div>

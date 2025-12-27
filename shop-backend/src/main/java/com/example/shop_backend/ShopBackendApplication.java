@@ -1,13 +1,16 @@
 package com.example.shop_backend;
 
 import com.example.shop_backend.model.User;
+import com.example.shop_backend.model.UserRole;
 import com.example.shop_backend.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 public class ShopBackendApplication {
 
 	public static void main(String[] args) {
@@ -21,8 +24,18 @@ public class ShopBackendApplication {
 				User user = new User();
 				user.setUsername("admin");
 				user.setPassword("123456");
+				user.setRole(UserRole.SELLER);
 				userRepository.save(user);
 				System.out.println("Default user created: admin/123456");
+			}
+
+			if (userRepository.findByUsername("buyer").isEmpty()) {
+				User user = new User();
+				user.setUsername("buyer");
+				user.setPassword("123456");
+				user.setRole(UserRole.CUSTOMER);
+				userRepository.save(user);
+				System.out.println("Default user created: buyer/123456");
 			}
 		};
 	}

@@ -23,4 +23,8 @@ public class Product {
     private String imageUrl;
 
     private Integer stockQuantity;
+
+    @ManyToOne
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller;
 }

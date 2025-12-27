@@ -14,17 +14,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onAddToCar
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const priceTag = product.price < 30
-    ? { label: 'Budget', className: 'bg-emerald-400/20 text-emerald-100 border-emerald-300/30' }
+    ? { label: '平价', className: 'bg-emerald-400/20 text-emerald-100 border-emerald-300/30' }
     : product.price < 120
-      ? { label: 'Signature', className: 'bg-amber-400/20 text-amber-100 border-amber-300/30' }
-      : { label: 'Collector', className: 'bg-cyan-400/20 text-cyan-100 border-cyan-300/30' };
+      ? { label: '精选', className: 'bg-amber-400/20 text-amber-100 border-amber-300/30' }
+      : { label: '高端', className: 'bg-cyan-400/20 text-cyan-100 border-cyan-300/30' };
 
   const stockCount = product.stockQuantity ?? 0;
   const stockTag = product.stockQuantity == null
-    ? { label: 'Stock N/A', className: 'bg-white/10 text-slate-200 border-white/20' }
+    ? { label: '库存未知', className: 'bg-white/10 text-slate-200 border-white/20' }
     : stockCount <= 5
-      ? { label: 'Low Stock', className: 'bg-orange-400/20 text-orange-100 border-orange-300/30' }
-      : { label: 'In Stock', className: 'bg-sky-400/20 text-sky-100 border-sky-300/30' };
+      ? { label: '库存紧张', className: 'bg-orange-400/20 text-orange-100 border-orange-300/30' }
+      : { label: '库存充足', className: 'bg-sky-400/20 text-sky-100 border-sky-300/30' };
 
   const imageHeightClass = 'h-64';
 
@@ -59,7 +59,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onAddToCar
           className="absolute top-3 right-3 px-3 py-1 rounded-full text-[0.65rem] font-bold uppercase tracking-widest bg-white/20 text-white shadow-sm hover:bg-white/30"
           aria-expanded={expanded}
         >
-          {expanded ? 'Close' : 'Details'}
+          {expanded ? '收起' : '详情'}
         </button>
       </div>
 
@@ -80,21 +80,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onAddToCar
         >
           <div className="pt-3 space-y-3 text-sm text-slate-300">
             <div className="flex items-center justify-between text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">
-              <span>Availability</span>
-              <span>{product.stockQuantity == null ? 'Unknown' : `${stockCount} left`}</span>
+              <span>库存</span>
+              <span>{product.stockQuantity == null ? '未知' : `剩余 ${stockCount}`}</span>
             </div>
-            <p className="leading-relaxed">Tap into the story behind this piece. Clean lines, quiet confidence, and crafted for daily rituals.</p>
+            <p className="leading-relaxed">精选品质，细节用心，适合日常搭配与使用。</p>
             {onDelete && (
               <button
                 type="button"
                 onClick={() => {
-                  if (window.confirm(`Delete ${product.name}?`)) {
+                  if (window.confirm(`确认删除 ${product.name} 吗？`)) {
                     onDelete(product.id);
                   }
                 }}
                 className="w-full py-2 border border-red-300/40 text-red-200 font-bold rounded-xl hover:bg-red-500/20 transition-colors"
               >
-                Delete product
+                删除商品
               </button>
             )}
           </div>
@@ -105,13 +105,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onAddToCar
             onClick={() => onAddToCart && onAddToCart(product.id)}
             className="flex-1 py-2.5 bg-cyan-300 hover:bg-cyan-200 text-slate-900 text-sm font-bold rounded-xl transition-all transform active:scale-95"
           >
-            Add to cart
+            加入购物车
           </button>
           <Link
             to={`/product/${product.id}`}
             className="flex-1 py-2.5 border border-white/30 text-white text-sm font-bold rounded-xl hover:border-cyan-200 hover:text-cyan-100 transition-all text-center"
           >
-            View
+            查看详情
           </Link>
         </div>
       </div>

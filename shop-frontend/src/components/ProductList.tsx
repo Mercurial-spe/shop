@@ -26,7 +26,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
       const data = await apiService.getProducts();
       setProducts(data);
     } catch (err) {
-      setError('Unable to load products.');
+      setError('商品加载失败。');
       console.error('Error fetching products:', err);
     } finally {
       setLoading(false);
@@ -47,8 +47,8 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
       await apiService.deleteProduct(id);
       setProducts((prev) => prev.filter((p) => p.id !== id));
     } catch (err) {
-      console.error('Failed to delete product', err);
-      alert('Delete failed. Please try again.');
+      console.error('删除商品失败', err);
+      alert('删除失败，请稍后再试。');
     }
   };
 
@@ -59,9 +59,9 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     }
     try {
       await apiService.addToCart(user.id, productId, 1);
-      alert('Added to cart.');
+      alert('已加入购物车。');
     } catch (err) {
-      alert('Failed to add to cart.');
+      alert('加入购物车失败。');
     }
   };
 
@@ -90,7 +90,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20 space-y-4 text-slate-300">
       <div className="w-12 h-12 border-4 border-white/20 border-t-cyan-300 rounded-full animate-spin"></div>
-      <p className="font-medium">Curating the catalog...</p>
+      <p className="font-medium">正在加载商品...</p>
     </div>
   );
 
@@ -98,8 +98,8 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     <div className="text-center py-20 bg-white/10 rounded-2xl border border-white/20 max-w-2xl mx-auto px-4 text-slate-200 backdrop-blur">
       <div className="text-6xl mb-4 text-cyan-200">!</div>
       <h3 className="text-3xl font-bold text-cyan-100 mb-2 tracking-widest">{error}</h3>
-      <p className="text-slate-300 mb-6 font-mono text-sm">Please check if backend service is running on port 8080</p>
-      <button onClick={loadProducts} className="px-6 py-2 bg-cyan-300 text-slate-900 rounded-lg font-bold hover:bg-cyan-200 transition-colors">Retry</button>
+      <p className="text-slate-300 mb-6 font-mono text-sm">请检查后端服务是否在 8080 端口运行</p>
+      <button onClick={loadProducts} className="px-6 py-2 bg-cyan-300 text-slate-900 rounded-lg font-bold hover:bg-cyan-200 transition-colors">重试</button>
     </div>
   );
 
@@ -114,21 +114,23 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
           <p className="text-slate-400 mt-2 font-medium tracking-[0.35em] uppercase text-xs">品质信号</p>
         </div>
 
-        <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-md border border-white/20 backdrop-blur ${
-            showAddForm
-              ? 'bg-white/20 text-white hover:bg-white/30'
-              : 'bg-cyan-300 text-slate-900 hover:bg-cyan-200 shadow-cyan-200/30'
-          }`}
-        >
-            {showAddForm ? '关闭编辑' : '发布商品'}
-        </button>
+        {user?.role === 'SELLER' && (
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-md border border-white/20 backdrop-blur ${
+              showAddForm
+                ? 'bg-white/20 text-white hover:bg-white/30'
+                : 'bg-cyan-300 text-slate-900 hover:bg-cyan-200 shadow-cyan-200/30'
+            }`}
+          >
+              {showAddForm ? '关闭编辑' : '发布商品'}
+          </button>
+        )}
       </div>
 
-      {showAddForm && (
+      {showAddForm && user?.role === 'SELLER' && (
         <div className="transition-all">
-          <AddProductForm onCreated={handleCreated} />
+          <AddProductForm onCreated={handleCreated} sellerId={user.id} />
         </div>
       )}
 

@@ -1,4 +1,4 @@
-﻿package com.example.shop_backend.service;
+package com.example.shop_backend.service;
 
 import com.example.shop_backend.model.CartItem;
 import com.example.shop_backend.model.Product;
@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Cart Service implementation
+ */
 @Service
 public class CartService {
 
@@ -25,14 +28,17 @@ public class CartService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private OrderService orderService;
+
     public List<CartItem> getCartByUser(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
         return cartItemRepository.findByUser(user);
     }
 
     public CartItem addToCart(Long userId, Long productId, Integer quantity) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("商品不存在"));
 
         Optional<CartItem> existingItem = cartItemRepository.findByUserAndProductId(user, productId);
 
@@ -55,29 +61,18 @@ public class CartService {
 
     @Transactional
     public void clearCart(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
         cartItemRepository.deleteByUser(user);
     }
 
     @Transactional
     public void checkout(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
         List<CartItem> items = cartItemRepository.findByUser(user);
-
-        for (CartItem item : items) {
-            Product product = item.getProduct();
-            Integer stock = product.getStockQuantity();
-            if (stock == null) {
-                continue;
-            }
-            int remaining = stock - item.getQuantity();
-            if (remaining < 0) {
-                throw new RuntimeException("Insufficient stock");
-            }
-            product.setStockQuantity(remaining);
-            productRepository.save(product);
+        if (items.isEmpty()) {
+            throw new RuntimeException("购物车为空");
         }
-
+        orderService.checkout(userId, items);
         cartItemRepository.deleteByUser(user);
     }
 }

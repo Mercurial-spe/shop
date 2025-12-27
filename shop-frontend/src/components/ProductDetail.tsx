@@ -33,44 +33,45 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
 
   const handleAddToCart = async () => {
     if (!user) {
-      alert('Please sign in first.');
+      alert('请先登录。');
       navigate('/login');
       return;
     }
     if (product) {
       try {
         await apiService.addToCart(user.id, product.id, quantity);
-        alert('Added to cart.');
+        alert('已加入购物车。');
       } catch (err) {
-        alert('Failed to add to cart.');
+        alert('加入购物车失败。');
       }
     }
   };
 
   const handleBuyNow = async () => {
     if (!user) {
-      alert('Please sign in first.');
+      alert('请先登录。');
       navigate('/login');
       return;
     }
     if (product) {
       try {
-        const updated = await apiService.purchaseProduct(product.id, quantity);
-        setProduct(updated);
-        alert('购买成功。');
+        await apiService.purchaseProduct(product.id, user.id, quantity);
+        const refreshed = await apiService.getProduct(product.id);
+        setProduct(refreshed);
+        alert('购买成功，订单已生成。');
       } catch (err) {
         alert('购买失败，请稍后再试。');
       }
     }
   };
 
-  if (loading) return <div className="text-center py-20 text-slate-300">Loading product...</div>;
-  if (!product) return <div className="text-center py-20 text-slate-300">Product not found.</div>;
+  if (loading) return <div className="text-center py-20 text-slate-300">正在加载商品...</div>;
+  if (!product) return <div className="text-center py-20 text-slate-300">未找到商品。</div>;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <Link to="/products" className="text-cyan-200 hover:text-cyan-100 mb-8 inline-flex items-center gap-2 font-medium">
-        <span className="text-lg">&larr;</span> Back to catalog
+        <span className="text-lg">&larr;</span> 返回商品列表
       </Link>
 
       <div className="grid md:grid-cols-2 gap-12 mt-6">

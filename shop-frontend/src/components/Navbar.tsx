@@ -33,6 +33,28 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
       )
     },
     ...(user ? [
+      ...(user.role === 'CUSTOMER' ? [{
+        label: '订单',
+        path: '/orders',
+        icon: (
+          <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 3h6l1 2h5v16H3V5h5l1-2z"></path>
+            <path d="M9 12h6"></path>
+            <path d="M9 16h6"></path>
+          </svg>
+        )
+      }] : []),
+      ...(user.role === 'SELLER' ? [{
+        label: '销售管理',
+        path: '/seller',
+        icon: (
+          <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 12h18"></path>
+            <path d="M3 6h18"></path>
+            <path d="M3 18h18"></path>
+          </svg>
+        )
+      }] : []),
       {
         label: '购物车',
         path: '/cart',

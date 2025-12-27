@@ -16,7 +16,7 @@ const Cart: React.FC<CartProps> = ({ user }) => {
       const data = await apiService.getCart(user.id);
       setItems(data);
     } catch (err) {
-      console.error('Failed to fetch cart', err);
+      console.error('加载购物车失败', err);
     } finally {
       setLoading(false);
     }
@@ -31,17 +31,17 @@ const Cart: React.FC<CartProps> = ({ user }) => {
       await apiService.removeFromCart(user.id, itemId);
       setItems(items.filter(item => item.id !== itemId));
     } catch (err) {
-      alert('Failed to remove item.');
+      alert('移除失败，请稍后再试。');
     }
   };
 
   const handleClear = async () => {
-    if (window.confirm('Clear all items from the cart?')) {
+    if (window.confirm('确定清空购物车吗？')) {
       try {
         await apiService.clearCart(user.id);
         setItems([]);
       } catch (err) {
-        alert('Failed to clear cart.');
+        alert('清空失败，请稍后再试。');
       }
     }
   };
@@ -51,7 +51,7 @@ const Cart: React.FC<CartProps> = ({ user }) => {
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20 space-y-4 text-slate-300">
       <div className="w-12 h-12 border-4 border-white/20 border-t-cyan-300 rounded-full animate-spin"></div>
-      <p className="font-medium">Preparing your cart...</p>
+      <p className="font-medium">正在加载购物车...</p>
     </div>
   );
 

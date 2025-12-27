@@ -24,7 +24,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       onLoginSuccess(user);
       navigate('/products');
     } catch (err: any) {
-      setError(err.message || 'Login failed. Check your credentials.');
+      setError(err.message || '登录失败，请检查账号和密码。');
     } finally {
       setLoading(false);
     }
@@ -38,18 +38,18 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         </div>
         <h2 className="text-7xl font-starborn mb-8 py-2 uppercase tracking-wide">
           <span className="bg-gradient-to-b from-primary-600 via-primary-500 to-indigo-700 bg-clip-text text-transparent filter drop-shadow-[2px_4px_0px_rgba(0,0,0,0.02)]">
-            Welcome Back
+            欢迎回来
           </span>
         </h2>
         <p className="text-gray-400 font-chandia text-xl tracking-wider capitalize bg-gray-50 px-6 py-2 rounded-full">
-          Sign in to continue
+          登录后继续
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-10 px-2">
         <div className="space-y-4 text-left">
           <label className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 text-primary-700 rounded-xl font-chicken font-black tracking-widest text-lg">
-            Username
+            用户名
           </label>
           <div className="relative group">
             <input
@@ -57,7 +57,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full px-6 py-4.5 bg-gray-50/50 border-2 border-transparent rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-primary-100/50 focus:border-primary-500 outline-none transition-all text-gray-800 placeholder-gray-400 font-medium font-chicken text-lg tracking-wide"
-              placeholder="Enter your username"
+              placeholder="请输入用户名"
               required
             />
           </div>
@@ -65,7 +65,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
         <div className="space-y-4">
           <label className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 text-primary-700 rounded-xl font-chicken font-black tracking-widest text-lg">
-            Password
+            密码
           </label>
           <div className="relative group">
             <input
@@ -73,7 +73,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-6 py-4.5 bg-gray-50/50 border-2 border-transparent rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-primary-100/50 focus:border-primary-500 outline-none transition-all text-gray-800 placeholder-gray-400 font-medium font-chicken text-lg tracking-wide"
-              placeholder="Enter your password"
+              placeholder="请输入密码"
               required
             />
           </div>
@@ -93,17 +93,17 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           {loading ? (
             <span className="flex items-center justify-center gap-2">
               <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              Signing in...
+              正在登录...
             </span>
-          ) : 'Sign in'}
+          ) : '登录'}
         </button>
       </form>
 
       <div className="mt-12 pt-8 border-t border-gray-50 text-center">
         <p className="text-gray-500 font-medium">
-          New here?{' '}
+          还没有账号？{' '}
           <Link to="/register" className="text-primary-600 hover:text-primary-700 font-black hover:underline underline-offset-4 transition-all">
-            Create an account
+            立即注册
           </Link>
         </p>
       </div>

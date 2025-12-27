@@ -5,4 +5,8 @@ export interface Product {
   price: number;
   imageUrl?: string;
   stockQuantity?: number;
+  seller?: {
+    id: number;
+    username: string;
+  };
 }

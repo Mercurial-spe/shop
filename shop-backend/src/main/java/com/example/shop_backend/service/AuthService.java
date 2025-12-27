@@ -1,6 +1,7 @@
 package com.example.shop_backend.service;
 
 import com.example.shop_backend.model.User;
+import com.example.shop_backend.model.UserRole;
 import com.example.shop_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,9 @@ public class AuthService {
     public User register(User user) {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new RuntimeException("用户名已存在");
+        }
+        if (user.getRole() == null) {
+            user.setRole(UserRole.CUSTOMER);
         }
         return userRepository.save(user);
     }

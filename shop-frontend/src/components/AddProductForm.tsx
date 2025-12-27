@@ -4,9 +4,10 @@ import { apiService } from '../services/api';
 
 interface AddProductFormProps {
   onCreated: (product: Product) => void;
+  sellerId: number;
 }
 
-const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
+const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated, sellerId }) => {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
@@ -17,7 +18,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !price) {
-      alert('Please enter a name and price.');
+      alert('请输入商品名称和价格。');
       return;
     }
 
@@ -29,6 +30,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
         description: description.trim(),
         imageUrl: imageUrl.trim() || undefined,
         stockQuantity: stockQuantity ? Number(stockQuantity) : undefined,
+        sellerId,
       });
       onCreated(newProduct);
       setName('');
@@ -38,7 +40,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
       setStockQuantity('');
     } catch (err) {
       console.error('Failed to create product', err);
-      alert('Publish failed. Please check your inputs.');
+      alert('发布失败，请检查填写内容。');
     } finally {
       setSubmitting(false);
     }
@@ -47,15 +49,15 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
   return (
     <div className="bg-white/10 p-8 rounded-3xl border border-white/20 backdrop-blur max-w-4xl mx-auto mb-10">
       <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-        <span className="text-2xl text-cyan-200">+</span> New product
+        <span className="text-2xl text-cyan-200">+</span> 新商品
       </h3>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-200 mb-2">Product name</label>
+            <label className="block text-sm font-semibold text-slate-200 mb-2">商品名称</label>
             <input
-              placeholder="Example: Pro Shop Jacket"
+              placeholder="例如：ProShop 外套"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl focus:bg-white/10 focus:ring-2 focus:ring-cyan-200/60 focus:border-transparent outline-none transition-all text-white"
@@ -74,10 +76,10 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-200 mb-2">Stock</label>
+            <label className="block text-sm font-semibold text-slate-200 mb-2">库存</label>
             <input
               type="number"
-              placeholder="Optional"
+              placeholder="可选"
               value={stockQuantity}
               onChange={(e) => setStockQuantity(e.target.value)}
               className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl focus:bg-white/10 focus:ring-2 focus:ring-cyan-200/60 focus:border-transparent outline-none transition-all text-white"
@@ -87,9 +89,9 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-200 mb-2">Description</label>
+            <label className="block text-sm font-semibold text-slate-200 mb-2">商品描述</label>
             <textarea
-              placeholder="Describe the product details, materials, and story."
+              placeholder="描述商品细节、材质与亮点。"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
@@ -97,7 +99,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-200 mb-2">Image URL</label>
+            <label className="block text-sm font-semibold text-slate-200 mb-2">图片链接</label>
             <input
               placeholder="https://..."
               value={imageUrl}
@@ -113,7 +115,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated }) => {
             disabled={submitting}
             className="w-full md:w-auto px-10 py-4 bg-cyan-300 hover:bg-cyan-200 text-slate-900 font-bold rounded-2xl shadow-lg shadow-cyan-200/30 transition-all transform active:scale-95 disabled:opacity-50"
           >
-            {submitting ? 'Publishing...' : 'Publish product'}
+            {submitting ? '正在发布...' : '确认发布商品'}
           </button>
         </div>
       </form>
