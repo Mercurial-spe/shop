@@ -30,6 +30,16 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/{orderId}/user/{userId}")
+    public ResponseEntity<?> getOrderDetail(@PathVariable Long orderId, @PathVariable Long userId) {
+        try {
+            Order order = orderService.getOrderForUser(orderId, userId);
+            return ResponseEntity.ok(order);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/seller/{sellerId}")
     public ResponseEntity<?> getOrdersBySeller(@PathVariable Long sellerId) {
         try {

@@ -122,6 +122,10 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
     );
   }
 
+  const topProducts = stats
+    ? Object.entries(stats.productSales || {}).sort((a, b) => b[1] - a[1]).slice(0, 5)
+    : [];
+
   return (
     <div className="space-y-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -156,6 +160,26 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
             <p className="text-sm text-slate-400">售出件数</p>
             <p className="text-3xl font-bold text-white">{stats.totalUnits}</p>
           </div>
+        </div>
+      )}
+
+      {stats && (
+        <div className="bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur">
+          <h3 className="text-xl font-bold text-white mb-4">热卖商品排行</h3>
+          {topProducts.length === 0 ? (
+            <p className="text-slate-300">暂无销量数据。</p>
+          ) : (
+            <div className="space-y-3">
+              {topProducts.map(([name, quantity], index) => (
+                <div key={name} className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <div className="text-white font-semibold">
+                    {index + 1}. {name}
+                  </div>
+                  <div className="text-cyan-200 font-mono font-bold">销量 {quantity}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

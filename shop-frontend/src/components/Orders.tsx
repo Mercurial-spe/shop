@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import type { User } from '../services/api';
 
@@ -89,9 +90,17 @@ const Orders: React.FC<OrdersProps> = ({ user }) => {
                 <div className="text-sm">订单号: <span className="text-white font-semibold">{order.id}</span></div>
                 <div className="text-sm">下单时间: {new Date(order.createdAt).toLocaleString()}</div>
               </div>
-              <span className="px-4 py-2 rounded-full bg-cyan-500/80 text-white font-bold shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-                {statusMap[order.status]}
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="px-4 py-2 rounded-full bg-cyan-500/80 text-white font-bold shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+                  {statusMap[order.status]}
+                </span>
+                <Link
+                  to={`/orders/${order.id}`}
+                  className="px-4 py-2 rounded-full border border-white/20 text-slate-200 hover:text-white hover:border-cyan-200 transition-all"
+                >
+                  查看详情
+                </Link>
+              </div>
             </div>
             <div className="space-y-3">
               {order.items.map((item) => (

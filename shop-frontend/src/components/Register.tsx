@@ -4,6 +4,7 @@ import { apiService } from '../services/api';
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<'CUSTOMER' | 'SELLER'>('CUSTOMER');
@@ -23,7 +24,7 @@ const Register: React.FC = () => {
     setLoading(true);
 
     try {
-      await apiService.register(username, password, role);
+      await apiService.register(username, password, role, email);
       alert('注册成功，请登录。');
       navigate('/login');
     } catch (err: any) {
@@ -60,6 +61,19 @@ const Register: React.FC = () => {
             onChange={(e) => setUsername(e.target.value)}
             className="w-full px-6 py-4.5 bg-gray-50/50 border-2 border-transparent rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-primary-100/50 focus:border-primary-500 outline-none transition-all text-gray-800 placeholder-gray-400 font-medium font-chicken text-lg tracking-wide"
             placeholder="设置用户名"
+            required
+          />
+        </div>
+        <div className="space-y-4 text-left">
+          <label className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 text-primary-700 rounded-xl font-chicken font-black tracking-widest text-lg">
+            邮箱
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-6 py-4.5 bg-gray-50/50 border-2 border-transparent rounded-[1.25rem] focus:bg-white focus:ring-4 focus:ring-primary-100/50 focus:border-primary-500 outline-none transition-all text-gray-800 placeholder-gray-400 font-medium font-chicken text-lg tracking-wide"
+            placeholder="请输入邮箱"
             required
           />
         </div>

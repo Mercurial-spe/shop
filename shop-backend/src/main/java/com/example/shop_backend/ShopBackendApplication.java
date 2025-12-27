@@ -24,6 +24,7 @@ public class ShopBackendApplication {
 				User user = new User();
 				user.setUsername("admin");
 				user.setPassword("123456");
+				user.setEmail("524307197@qq.com");
 				user.setRole(UserRole.SELLER);
 				userRepository.save(user);
 				System.out.println("Default user created: admin/123456");
@@ -33,6 +34,7 @@ public class ShopBackendApplication {
 				User user = new User();
 				user.setUsername("buyer");
 				user.setPassword("123456");
+				user.setEmail("buyer@example.com");
 				user.setRole(UserRole.CUSTOMER);
 				userRepository.save(user);
 				System.out.println("Default user created: buyer/123456");

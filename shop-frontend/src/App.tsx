@@ -6,6 +6,7 @@ import Register from './components/Register';
 import Cart from './components/Cart';
 import ProductDetail from './components/ProductDetail';
 import Orders from './components/Orders';
+import OrderDetail from './components/OrderDetail';
 import SellerDashboard from './components/SellerDashboard';
 import Navbar from './components/Navbar';
 import InteractiveBackground from './components/InteractiveBackground';
@@ -92,6 +93,15 @@ function AppContent() {
             element={
               <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full">
                 {user ? <Orders user={user} /> : <Navigate to="/login" />}
+              </div>
+            }
+          />
+
+          <Route
+            path="/orders/:id"
+            element={
+              <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full">
+                {user ? <OrderDetail user={user} /> : <Navigate to="/login" />}
               </div>
             }
           />

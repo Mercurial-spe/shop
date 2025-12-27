@@ -4,9 +4,9 @@ DELETE FROM cart_items;
 DELETE FROM products;
 DELETE FROM users;
 
-INSERT INTO users (id, username, password, role) VALUES
-(1, 'admin', '123456', 'SELLER'),
-(2, 'buyer', '123456', 'CUSTOMER');
+INSERT INTO users (id, username, password, email, role) VALUES
+(1, 'admin', '123456', '524307197@qq.com', 'SELLER'),
+(2, 'buyer', '123456', 'buyer@example.com', 'CUSTOMER');
 
 INSERT INTO products (name, description, price, image_url, stock_quantity, seller_id) VALUES
 ('iPhone 15 Pro', '最新款苹果手机，A17 Pro芯片，钛金属机身', 7999.00, 'http://localhost:8080/100191209_p0.jpg', 50, 1),
@@ -18,4 +18,3 @@ INSERT INTO products (name, description, price, image_url, stock_quantity, selle
 ('Screen Cleaning Kit', '高级清洁布与喷雾', 15.99, 'http://localhost:8080/100191209_p0.jpg', 150, 1),
 ('Limited Edition Case', 'iPhone 15 Pro 限量版保护壳', 45.00, 'http://localhost:8080/100191209_p0.jpg', 3, 1),
 ('Mechanical Keycap', '手工定制键帽', 29.00, 'http://localhost:8080/100191209_p0.jpg', 2, 1);
-

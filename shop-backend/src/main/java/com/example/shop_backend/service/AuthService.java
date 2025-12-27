@@ -23,6 +23,9 @@ public class AuthService {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new RuntimeException("用户名已存在");
         }
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new RuntimeException("邮箱已存在");
+        }
         if (user.getRole() == null) {
             user.setRole(UserRole.CUSTOMER);
         }

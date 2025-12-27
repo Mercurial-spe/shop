@@ -38,6 +38,15 @@ public class OrderService {
         return orderRepository.findByUser(user);
     }
 
+    public Order getOrderForUser(Long orderId, Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("订单不存在"));
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("无权查看该订单");
+        }
+        return order;
+    }
+
     public List<OrderItem> getOrdersBySeller(Long sellerId) {
         User seller = userRepository.findById(sellerId).orElseThrow(() -> new RuntimeException("卖家不存在"));
         return orderItemRepository.findBySeller(seller);

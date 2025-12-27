@@ -1,12 +1,12 @@
-# ========================
-# 操作系统产生的垃圾文件
+﻿# ========================
+# æ“ä½œç³»ç»Ÿäº§ç”Ÿçš„åžƒåœ¾æ–‡ä»¶
 # ========================
 .DS_Store
 Thumbs.db
 *.log
 
 # ========================
-# IDE 配置 (VS Code / IntelliJ)
+# IDE é…ç½® (VS Code / IntelliJ)
 # ========================
 .vscode/
 .idea/
@@ -15,42 +15,43 @@ Thumbs.db
 *.ipr
 
 # ========================
-# Java / Spring Boot 后端
+# Java / Spring Boot åŽç«¯
 # ========================
-# 编译后的字节码文件夹 (必须忽略，否则冲突)
+# ç¼–è¯‘åŽçš„å­—èŠ‚ç æ–‡ä»¶å¤¹ (å¿…é¡»å¿½ç•¥ï¼Œå¦åˆ™å†²çª?
 target/
-# 各种编译产物
+# å„ç§ç¼–è¯‘äº§ç‰©
 *.class
 *.jar
 *.war
-# Spring Boot 运行时的临时文件
+# Spring Boot è¿è¡Œæ—¶çš„ä¸´æ—¶æ–‡ä»¶
 .mvn/wrapper/maven-wrapper.properties
-# 但是要保留 mvnw 脚本，方便别人运行
+# ä½†æ˜¯è¦ä¿ç•?mvnw è„šæœ¬ï¼Œæ–¹ä¾¿åˆ«äººè¿è¡?
 !mvnw
 !mvnw.cmd
 
 # ========================
-# React / Node 前端
+# React / Node å‰ç«¯
 # ========================
-# ⚠️ 绝对不能传的黑洞文件夹 (巨大无比)
+# âš ï¸ ç»å¯¹ä¸èƒ½ä¼ çš„é»‘æ´žæ–‡ä»¶å¤?(å·¨å¤§æ— æ¯”)
 node_modules/
-# 打包后的生产环境代码
+# æ‰“åŒ…åŽçš„ç”Ÿäº§çŽ¯å¢ƒä»£ç 
 dist/
 build/
-# 本地测试覆盖率
+# æœ¬åœ°æµ‹è¯•è¦†ç›–çŽ?
 coverage/
-# npm 报错日志
+# npm æŠ¥é”™æ—¥å¿—
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 
 # ========================
-# 安全隐患 (敏感信息)
+# å®‰å…¨éšæ‚£ (æ•æ„Ÿä¿¡æ¯)
 # ========================
-# 前端的环境变量 (通常包含 API Key)
+# å‰ç«¯çš„çŽ¯å¢ƒå˜é‡?(é€šå¸¸åŒ…å« API Key)
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+shop-backend/src/main/resources/application-local.properties
+nginx.conf.md

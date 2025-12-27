@@ -6,6 +6,7 @@ export interface User {
   id: number;
   username: string;
   role: 'CUSTOMER' | 'SELLER';
+  email?: string;
 }
 
 export interface CartItem {
@@ -80,10 +81,10 @@ class ApiService {
     });
   }
 
-  async register(username: string, password: string, role: 'CUSTOMER' | 'SELLER'): Promise<User> {
+  async register(username: string, password: string, role: 'CUSTOMER' | 'SELLER', email: string): Promise<User> {
     return this.request<User>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ username, password, role }),
+      body: JSON.stringify({ username, password, role, email }),
     });
   }
 
@@ -119,6 +120,10 @@ class ApiService {
 
   async getOrdersByUser(userId: number): Promise<any[]> {
     return this.request<any[]>(`/orders/user/${userId}`);
+  }
+
+  async getOrderDetail(orderId: number, userId: number): Promise<any> {
+    return this.request<any>(`/orders/${orderId}/user/${userId}`);
   }
 
   async getOrdersBySeller(sellerId: number): Promise<any[]> {
