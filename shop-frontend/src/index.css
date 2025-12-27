@@ -1,5 +1,72 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Starborn';
+  src: url('./assets/Starborn.otf') format('opentype'),
+       url('./assets/Starborn.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Chandia';
+  src: url('./assets/Chandia_PERSONAL_USE_ONLY.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Snowboarding';
+  src: url('./assets/Snowboarding.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SuperMeatball';
+  src: url('./assets/Super Meatball.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'DangerZone';
+  src: url('./assets/Danger Zone Warning.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OrientalChicken';
+  src: url('./assets/Oriental Chicken.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@theme {
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c4a6e;
+  --color-primary-950: #082f49;
+
+  --font-starborn: 'Starborn', sans-serif;
+  --font-chandia: 'Chandia', serif;
+  --font-snow: 'Snowboarding', cursive;
+  --font-meatball: 'SuperMeatball', sans-serif;
+  --font-danger: 'DangerZone', sans-serif;
+  --font-chicken: 'OrientalChicken', cursive;
+  --font-zcool: '"ZCOOL KuaiLe"', cursive, sans-serif;
+  --font-righteous: '"Righteous"', cursive, sans-serif;
+  --font-brush: '"Ma Shan Zheng"', '"STKaiti"', '"Kaiti"', '"楷体"', '"Microsoft Kaiti"', serif;
+}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
