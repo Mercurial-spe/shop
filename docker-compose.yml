@@ -9,6 +9,12 @@
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
 
   backend:
     build:
@@ -25,7 +31,9 @@
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    restart: unless-stopped
 
   frontend:
     build:
@@ -35,6 +43,7 @@
       - "5173:80"
     depends_on:
       - backend
+    restart: unless-stopped
 
 volumes:
   db_data:

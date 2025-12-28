@@ -26,10 +26,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
       path: '/products',
       icon: (
         <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 7h18"></path>
-          <path d="M6 7l1 12h10l1-12"></path>
-          <path d="M9 7V5a3 3 0 0 1 6 0v2"></path>
-        </svg>
+                <path d="M3 7h18"></path>
+                <path d="M6 7l1 12h10l1-12"></path>
+                <path d="M9 7V5a3 3 0 0 1 6 0v2"></path>
+              </svg>
       )
     },
     ...(user ? [
@@ -60,10 +60,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
         path: '/cart',
         icon: (
           <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 6h15l-1.5 9h-12z"></path>
-            <circle cx="9" cy="20" r="1"></circle>
-            <circle cx="18" cy="20" r="1"></circle>
-          </svg>
+                    <path d="M6 6h15l-1.5 9h-12z"></path>
+                    <circle cx="9" cy="20" r="1"></circle>
+                    <circle cx="18" cy="20" r="1"></circle>
+                  </svg>
         )
       },
       {
@@ -83,10 +83,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
         path: '/login',
         icon: (
           <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-            <path d="M10 17l5-5-5-5"></path>
-            <path d="M15 12H3"></path>
-          </svg>
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                    <path d="M10 17l5-5-5-5"></path>
+                    <path d="M15 12H3"></path>
+                  </svg>
         )
       }
     ])
@@ -104,11 +104,11 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
               </svg>
             </span>
             <span className="font-bold font-starborn text-white tracking-wide text-xl">Mercurial's Shop</span>
-          </Link>
+                </Link>
           <Link to="/products" className="text-sm font-bold font-starborn text-slate-300 hover:text-white transition-colors">
             返回商城
-          </Link>
-        </div>
+                </Link>
+              </div>
       </nav>
     );
   }
@@ -160,7 +160,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
                     <div className="absolute left-1/2 -translate-x-1/2 -top-10 px-3 py-1 bg-black/80 text-white text-xs font-bold font-starborn rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none backdrop-blur-sm border border-white/10">
                       {item.label}
                     </div>
-                  </div>
+          </div>
                 </motion.div>
               );
             })}
@@ -225,7 +225,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+      </div>
   );
 };
 
