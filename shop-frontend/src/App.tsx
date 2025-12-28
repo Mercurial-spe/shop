@@ -30,7 +30,7 @@ function Layout({ user, onLogout }: LayoutProps) {
       <Navbar user={user} onLogout={onLogout} />
 
       <main className={`main-content ${isAuthPage ? 'pt-32' : 'pt-8 pb-12'}`}>
-        <div className="main-content-wrapper">
+        <div className={`main-content-wrapper ${isAuthPage ? 'auth-wrapper' : ''}`}>
           <Outlet />
         </div>
         <footer className="site-footer">

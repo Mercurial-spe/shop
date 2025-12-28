@@ -28,8 +28,8 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, "UTF-8");
             helper.setFrom(fromEmail, "mercuria1");
             helper.setTo(order.getUser().getEmail());
-            helper.setSubject("订单已发货 - ProShop");
-            helper.setText("您的订单已发货。\n订单号: " + order.getId() + "\n状态: " + order.getStatus() + "\n感谢您的购买。");
+            helper.setSubject("订单已发货 - Mercurial's Shop");
+            helper.setText("您的订单已发货。\n如需确认收货，请回复该邮箱。\n感谢您的购买。");
             mailSender.send(message);
         } catch (MessagingException e) {
             System.out.println("邮件发送失败: " + e.getMessage());

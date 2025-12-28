@@ -151,7 +151,6 @@ const Cart: React.FC<CartProps> = ({ user }) => {
               >
                 去结算
               </button>
-              <p className="text-center text-xs text-slate-400 mt-4">支付流程即将上线。</p>
             </div>
           </div>
         </div>
