@@ -42,7 +42,7 @@ const Register: React.FC = () => {
         </div>
         <h2 className="text-7xl font-starborn mb-8 py-2 uppercase tracking-wide">
           <span className="bg-gradient-to-b from-primary-600 via-primary-500 to-indigo-700 bg-clip-text text-transparent filter drop-shadow-[2px_4px_0px_rgba(0,0,0,0.02)]">
-            创建账号
+            create account
           </span>
         </h2>
         <p className="text-gray-400 font-chandia text-xl tracking-wider capitalize bg-gray-50 px-6 py-2 rounded-full">

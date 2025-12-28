@@ -103,9 +103,9 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
                 <path d="M9 22V12h6v10"></path>
               </svg>
             </span>
-            <span className="font-bold text-white tracking-wide">Mercurial's Shop</span>
+            <span className="font-bold font-starborn text-white tracking-wide text-xl">Mercurial's Shop</span>
           </Link>
-          <Link to="/products" className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
+          <Link to="/products" className="text-sm font-bold font-starborn text-slate-300 hover:text-white transition-colors">
             返回商城
           </Link>
         </div>
@@ -157,7 +157,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
                     )}
                     
                     {/* Tooltip */}
-                    <div className="absolute left-1/2 -translate-x-1/2 -top-10 px-3 py-1 bg-black/80 text-white text-xs font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none backdrop-blur-sm border border-white/10">
+                    <div className="absolute left-1/2 -translate-x-1/2 -top-10 px-3 py-1 bg-black/80 text-white text-xs font-bold font-starborn rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none backdrop-blur-sm border border-white/10">
                       {item.label}
                     </div>
                   </div>
@@ -202,23 +202,23 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
           >
              {user ? (
                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-cyan-300 uppercase tracking-widest mb-0.5">
+                  <span className="text-xs font-bold font-starborn text-cyan-300 uppercase tracking-widest mb-0.5">
                     欢迎回来
                   </span>
-                  <span className="text-2xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                  <span className="text-2xl font-bold font-starborn text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
                     {user.username}
                   </span>
                </div>
              ) : (
                <div className="flex flex-col">
-                 <span className="text-2xl font-bold tracking-wide bg-gradient-to-r from-white via-cyan-100 to-cyan-300 bg-clip-text text-transparent drop-shadow-md">
+                 <span className="text-2xl font-bold font-starborn tracking-wide bg-gradient-to-r from-white via-cyan-100 to-cyan-300 bg-clip-text text-transparent drop-shadow-md">
                    Mercurial's Shop
                  </span>
                </div>
              )}
              <div className="flex items-center gap-2 mt-1">
                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]"></div>
-               <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-slate-400">
+               <span className="text-[10px] font-bold font-starborn uppercase tracking-[0.2em] text-slate-400">
                  点击进入
                </span>
              </div>

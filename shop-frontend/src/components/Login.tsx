@@ -30,6 +30,11 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     }
   };
 
+  const fillTestAccount = (user: string, pass: string) => {
+    setUsername(user);
+    setPassword(pass);
+  };
+
   return (
     <div className="w-full max-w-xl px-20 py-16 bg-white rounded-[3rem] shadow-2xl border border-gray-100 transition-all">
       <div className="flex flex-col items-center text-center mb-16">
@@ -38,7 +43,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         </div>
         <h2 className="text-7xl font-starborn mb-8 py-2 uppercase tracking-wide">
           <span className="bg-gradient-to-b from-primary-600 via-primary-500 to-indigo-700 bg-clip-text text-transparent filter drop-shadow-[2px_4px_0px_rgba(0,0,0,0.02)]">
-            欢迎回来
+            welcome back
           </span>
         </h2>
         <p className="text-gray-400 font-chandia text-xl tracking-wider capitalize bg-gray-50 px-6 py-2 rounded-full">
@@ -98,6 +103,44 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           ) : '登录'}
         </button>
       </form>
+
+      {/* Test Accounts Signboard */}
+      <div className="mt-10 p-6 bg-gradient-to-br from-slate-50 to-primary-50/30 rounded-[2rem] border border-primary-100/50 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+          <svg viewBox="0 0 24 24" className="w-12 h-12 text-primary-600" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.011-.203 2.977m-2.777 2.818c-.51.391-1.054.724-1.627.996L10.75 20l1.25-1.25L13.25 20l.627-.996a13.911 13.911 0 004.599-9.251M12 5a2 2 0 110-4 2 2 0 010 4z" />
+          </svg>
+        </div>
+        
+        <h4 className="text-sm font-bold font-starborn text-primary-700/70 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-primary-400 animate-pulse"></span>
+          测试账户告示牌
+        </h4>
+        
+        <div className="grid grid-cols-2 gap-4 relative z-10">
+          <button
+            onClick={() => fillTestAccount('admin', '123456')}
+            className="flex flex-col items-start p-4 bg-white hover:bg-primary-50 rounded-2xl border border-white hover:border-primary-200 shadow-sm hover:shadow-md transition-all group/btn text-left"
+          >
+            <span className="text-[10px] font-bold text-primary-400 uppercase tracking-tighter mb-1">卖家账户 (Seller)</span>
+            <span className="text-lg font-bold font-starborn text-slate-700 group-hover/btn:text-primary-600">admin</span>
+            <span className="text-xs font-mono text-slate-400 mt-1">密码: 123456</span>
+          </button>
+
+          <button
+            onClick={() => fillTestAccount('buyer', '123456')}
+            className="flex flex-col items-start p-4 bg-white hover:bg-primary-50 rounded-2xl border border-white hover:border-primary-200 shadow-sm hover:shadow-md transition-all group/btn text-left"
+          >
+            <span className="text-[10px] font-bold text-primary-400 uppercase tracking-tighter mb-1">买家账户 (Buyer)</span>
+            <span className="text-lg font-bold font-starborn text-slate-700 group-hover/btn:text-primary-600">buyer</span>
+            <span className="text-xs font-mono text-slate-400 mt-1">密码: 123456</span>
+          </button>
+        </div>
+        
+        <p className="mt-4 text-[10px] text-slate-400 text-center font-medium tracking-wide italic">
+          * 点击上方卡片即可自动填写账户信息
+        </p>
+      </div>
 
       <div className="mt-12 pt-8 border-t border-gray-50 text-center">
         <p className="text-gray-500 font-medium">

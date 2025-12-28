@@ -45,10 +45,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onAddToCar
         </Link>
 
         <div className="absolute top-3 left-3 flex gap-2">
-          <span className={`px-3 py-1 rounded-full text-[0.65rem] font-bold uppercase tracking-widest border ${priceTag.className}`}>
+          <span className={`px-3 py-1 rounded-full text-[0.65rem] font-danger font-bold uppercase tracking-widest border ${priceTag.className}`}>
             {priceTag.label}
           </span>
-          <span className={`px-3 py-1 rounded-full text-[0.65rem] font-bold uppercase tracking-widest border ${stockTag.className}`}>
+          <span className={`px-3 py-1 rounded-full text-[0.65rem] font-danger font-bold uppercase tracking-widest border ${stockTag.className}`}>
             {stockTag.label}
           </span>
         </div>
@@ -56,7 +56,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onAddToCar
         <button
           type="button"
           onClick={() => setExpanded((prev) => !prev)}
-          className="absolute top-3 right-3 px-3 py-1 rounded-full text-[0.65rem] font-bold uppercase tracking-widest bg-white/20 text-white shadow-sm hover:bg-white/30"
+          className="absolute top-3 right-3 px-3 py-1 rounded-full text-[0.65rem] font-danger font-bold uppercase tracking-widest bg-white/20 text-white shadow-sm hover:bg-white/30"
           aria-expanded={expanded}
         >
           {expanded ? '收起' : '详情'}
@@ -66,9 +66,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onAddToCar
       <div className="p-5 flex flex-col flex-grow text-slate-100">
         <div className="mb-2 flex justify-between items-start gap-2">
           <Link to={`/product/${product.id}`} className="hover:text-cyan-200 transition-colors">
-            <h3 className="text-lg font-semibold font-sans text-slate-100 leading-tight line-clamp-2">{product.name}</h3>
+            <h3 className="text-lg font-bold text-slate-100 leading-tight line-clamp-2">{product.name}</h3>
           </Link>
-          <span className="text-2xl font-mono font-bold text-cyan-200 drop-shadow-sm">¥{product.price.toFixed(2)}</span>
+          <span className="text-2xl font-righteous font-bold text-cyan-200 drop-shadow-sm">¥{product.price.toFixed(2)}</span>
         </div>
 
         <p className="text-sm text-slate-300 line-clamp-2 mb-4 flex-grow">
@@ -103,13 +103,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onAddToCar
         <div className="flex gap-2 mt-4 opacity-100 translate-y-0 sm:opacity-0 sm:translate-y-6 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 transition-all duration-300">
           <button
             onClick={() => onAddToCart && onAddToCart(product.id)}
-            className="flex-1 py-2.5 bg-cyan-300 hover:bg-cyan-200 text-slate-900 text-sm font-bold rounded-xl transition-all transform active:scale-95"
+            className="flex-1 py-2.5 bg-cyan-300 hover:bg-cyan-200 text-slate-900 text-sm font-bold font-starborn rounded-xl transition-all transform active:scale-95"
           >
             加入购物车
           </button>
           <Link
             to={`/product/${product.id}`}
-            className="flex-1 py-2.5 border border-white/30 text-white text-sm font-bold rounded-xl hover:border-cyan-200 hover:text-cyan-100 transition-all text-center"
+            className="flex-1 py-2.5 border border-white/30 text-white text-sm font-bold font-starborn rounded-xl hover:border-cyan-200 hover:text-cyan-100 transition-all text-center"
           >
             查看详情
           </Link>

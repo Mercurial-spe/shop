@@ -108,10 +108,10 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
       <div className="flex flex-col md:flex-row justify-between items-end gap-6 px-2">
         <div className="relative group">
           <h2 className="text-5xl md:text-6xl font-snow bg-gradient-to-r from-white via-cyan-200 to-cyan-400 bg-clip-text text-transparent py-2">
-            精选推荐
+            curated recommendations
           </h2>
           <div className="absolute -bottom-1 left-0 w-1/3 h-1.5 bg-cyan-300 rounded-full transform origin-left group-hover:w-full transition-all duration-500"></div>
-          <p className="text-slate-400 mt-2 font-medium tracking-[0.35em] uppercase text-xs">品质信号</p>
+          <p className="text-slate-400 mt-2 font-bold font-starborn tracking-[0.35em] uppercase text-xs">quality signals</p>
         </div>
 
         {user?.role === 'SELLER' && (
