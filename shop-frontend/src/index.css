@@ -24,21 +24,21 @@
 
 @font-face {
   font-family: 'SuperMeatball';
-  src: url('./assets/Super Meatball.ttf') format('truetype');
+  src: url('./assets/SuperMeatball.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'DangerZone';
-  src: url('./assets/Danger Zone Warning.ttf') format('truetype');
+  src: url('./assets/DangerZoneWarning.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'OrientalChicken';
-  src: url('./assets/Oriental Chicken.ttf') format('truetype');
+  src: url('./assets/OrientalChicken.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
