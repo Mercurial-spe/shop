@@ -84,23 +84,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onAddToCar
               <span>{product.stockQuantity == null ? '未知' : `剩余 ${stockCount}`}</span>
             </div>
             <p className="leading-relaxed">精选品质，细节用心，适合日常搭配与使用。</p>
-            {onDelete && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (window.confirm(`确认删除 ${product.name} 吗？`)) {
-                    onDelete(product.id);
-                  }
-                }}
-                className="w-full py-2 border border-red-300/40 text-red-200 font-bold rounded-xl hover:bg-red-500/20 transition-colors"
-              >
-                删除商品
-              </button>
-            )}
           </div>
         </div>
 
         <div className="flex gap-2 mt-4 opacity-100 translate-y-0 sm:opacity-0 sm:translate-y-6 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 transition-all duration-300">
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm(`确认删除 ${product.name} 吗？`)) {
+                  onDelete(product.id);
+                }
+              }}
+              className="flex-1 py-2.5 bg-red-500/80 hover:bg-red-500 text-white text-sm font-bold font-starborn rounded-xl transition-all transform active:scale-95 border border-red-300/40 shadow-[0_12px_28px_rgba(239,68,68,0.35)]"
+            >
+              删除商品
+            </button>
+          )}
           <button
             onClick={() => onAddToCart && onAddToCart(product.id)}
             className="flex-1 py-2.5 bg-cyan-300 hover:bg-cyan-200 text-slate-900 text-sm font-bold font-starborn rounded-xl transition-all transform active:scale-95"

@@ -160,7 +160,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
             >
               <ProductCard
                 product={product}
-                onDelete={handleDelete}
+                onDelete={user?.role === 'SELLER' ? handleDelete : undefined}
                 onAddToCart={handleAddToCart}
                 className="w-full h-full"
               />
