@@ -121,7 +121,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
           <>
             {menuItems.map((item, index) => {
               const angle = -90 + (index * (90 / (menuItems.length - 1 || 1))); // Distribute from -90 (top) to 0 (right)
-              const radius = 100; // Distance from center
+              const radius = 130; // Distance from center
               const x = Math.cos((angle * Math.PI) / 180) * radius;
               const y = Math.sin((angle * Math.PI) / 180) * radius;
 
@@ -139,10 +139,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
                     {item.path ? (
                       <Link
                         to={item.path}
-                        className="flex items-center justify-center w-14 h-14 rounded-full bg-slate-900/90 border border-cyan-500/30 text-cyan-300 shadow-lg shadow-cyan-500/20 hover:bg-cyan-500 hover:text-white hover:scale-110 transition-all duration-300"
+                        className="flex items-center justify-center w-16 h-16 rounded-full bg-slate-900/90 border border-cyan-500/30 text-cyan-300 shadow-lg shadow-cyan-500/20 hover:bg-cyan-500 hover:text-white hover:scale-110 transition-all duration-300"
                         onClick={() => setIsOpen(false)}
                       >
-                        {item.icon}
+                        {React.cloneElement(item.icon as React.ReactElement, { className: 'w-8 h-8' })}
                       </Link>
                     ) : (
                       <button
@@ -150,14 +150,14 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
                           item.action?.();
                           setIsOpen(false);
                         }}
-                        className="flex items-center justify-center w-14 h-14 rounded-full bg-slate-900/90 border border-red-500/30 text-red-300 shadow-lg shadow-red-500/20 hover:bg-red-500 hover:text-white hover:scale-110 transition-all duration-300"
+                        className="flex items-center justify-center w-16 h-16 rounded-full bg-slate-900/90 border border-red-500/30 text-red-300 shadow-lg shadow-red-500/20 hover:bg-red-500 hover:text-white hover:scale-110 transition-all duration-300"
                       >
-                        {item.icon}
+                        {React.cloneElement(item.icon as React.ReactElement, { className: 'w-8 h-8' })}
                       </button>
                     )}
                     
                     {/* Tooltip */}
-                    <div className="absolute left-1/2 -translate-x-1/2 -top-10 px-3 py-1 bg-black/80 text-white text-xs font-bold font-starborn rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none backdrop-blur-sm border border-white/10">
+                    <div className="absolute left-1/2 -translate-x-1/2 -top-10 px-4 py-2 bg-black/80 text-white text-sm font-bold font-starborn rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none backdrop-blur-sm border border-white/10">
                       {item.label}
                     </div>
           </div>
@@ -173,15 +173,15 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
         onClick={() => setIsOpen(!isOpen)}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="relative z-50 flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-[0_0_30px_rgba(34,211,238,0.4)] ring-2 ring-white/20 hover:shadow-[0_0_50px_rgba(34,211,238,0.6)] transition-all duration-300 group"
+        className="relative z-50 flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-[0_0_30px_rgba(34,211,238,0.4)] ring-2 ring-white/20 hover:shadow-[0_0_50px_rgba(34,211,238,0.6)] transition-all duration-300 group"
       >
         <div className={`transition-transform duration-300 ${isOpen ? 'rotate-45' : 'rotate-0'}`}>
           {isOpen ? (
-            <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" className="w-10 h-10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6L6 18M6 6l12 12"></path>
             </svg>
           ) : (
-             <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+             <svg viewBox="0 0 24 24" className="w-10 h-10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                <path d="M3 9l9-6 9 6"></path>
                <path d="M9 22V12h6v10"></path>
              </svg>
@@ -198,35 +198,35 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
              initial={{ opacity: 0, x: -10 }}
              animate={{ opacity: 1, x: 0 }}
              exit={{ opacity: 0, x: -10, transition: { duration: 0.2 } }}
-             className="absolute left-24 bottom-0 h-16 flex flex-col justify-center pointer-events-none whitespace-nowrap"
+             className="absolute left-28 bottom-0 h-20 flex flex-col justify-center pointer-events-none whitespace-nowrap"
           >
              {user ? (
                <div className="flex flex-col">
-                  <span className="text-xs font-bold font-starborn text-cyan-300 uppercase tracking-widest mb-0.5">
+                  <span className="text-sm font-bold font-starborn text-cyan-300 uppercase tracking-widest mb-1">
                     欢迎回来
                   </span>
-                  <span className="text-2xl font-bold font-starborn text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                  <span className="text-3xl font-bold font-starborn text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
                     {user.username}
                   </span>
                </div>
              ) : (
                <div className="flex flex-col">
-                 <span className="text-2xl font-bold font-starborn tracking-wide bg-gradient-to-r from-white via-cyan-100 to-cyan-300 bg-clip-text text-transparent drop-shadow-md">
+                 <span className="text-3xl font-bold font-starborn tracking-wide bg-gradient-to-r from-white via-cyan-100 to-cyan-300 bg-clip-text text-transparent drop-shadow-md">
                    Mercurial's Shop
                  </span>
                </div>
              )}
              <div className="flex items-center mt-2">
                <motion.div
-                 animate={{ x: [0, -8, 0] }}
+                 animate={{ x: [0, -12, 0] }}
                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                 className="flex items-center gap-2"
+                 className="flex items-center gap-3"
                >
-                 <svg viewBox="0 0 24 24" className="w-8 h-8 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                 <svg viewBox="0 0 24 24" className="w-10 h-10 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                    <path d="M19 12H5"></path>
                    <path d="M12 19l-7-7 7-7"></path>
                  </svg>
-                 <span className="text-xs font-bold font-starborn uppercase tracking-widest text-cyan-200 drop-shadow-md">
+                 <span className="text-sm font-bold font-starborn uppercase tracking-widest text-cyan-200 drop-shadow-md">
                    点击切换 购物车 / 订单 / 管理
                  </span>
                </motion.div>
