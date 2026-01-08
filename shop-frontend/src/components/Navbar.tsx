@@ -216,11 +216,20 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
                  </span>
                </div>
              )}
-             <div className="flex items-center gap-2 mt-1">
-               <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]"></div>
-               <span className="text-[10px] font-bold font-starborn uppercase tracking-[0.2em] text-slate-400">
-                 点击进入
-               </span>
+             <div className="flex items-center mt-2">
+               <motion.div
+                 animate={{ x: [0, -8, 0] }}
+                 transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                 className="flex items-center gap-2"
+               >
+                 <svg viewBox="0 0 24 24" className="w-8 h-8 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                   <path d="M19 12H5"></path>
+                   <path d="M12 19l-7-7 7-7"></path>
+                 </svg>
+                 <span className="text-xs font-bold font-starborn uppercase tracking-widest text-cyan-200 drop-shadow-md">
+                   点击切换 购物车 / 订单 / 管理
+                 </span>
+               </motion.div>
              </div>
           </motion.div>
         )}
