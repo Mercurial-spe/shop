@@ -25,7 +25,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
       label: '商品',
       path: '/products',
       icon: (
-        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 7h18"></path>
                 <path d="M6 7l1 12h10l1-12"></path>
                 <path d="M9 7V5a3 3 0 0 1 6 0v2"></path>
@@ -37,7 +37,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
         label: '订单',
         path: '/orders',
         icon: (
-          <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 3h6l1 2h5v16H3V5h5l1-2z"></path>
             <path d="M9 12h6"></path>
             <path d="M9 16h6"></path>
@@ -48,7 +48,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
         label: '销售管理',
         path: '/seller',
         icon: (
-          <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 12h18"></path>
             <path d="M3 6h18"></path>
             <path d="M3 18h18"></path>
@@ -59,7 +59,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
         label: '购物车',
         path: '/cart',
         icon: (
-          <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M6 6h15l-1.5 9h-12z"></path>
                     <circle cx="9" cy="20" r="1"></circle>
                     <circle cx="18" cy="20" r="1"></circle>
@@ -70,7 +70,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
         label: '退出',
         action: handleLogout,
         icon: (
-          <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <path d="M16 17l5-5-5-5"></path>
             <path d="M21 12H9"></path>
@@ -82,7 +82,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
         label: '登录',
         path: '/login',
         icon: (
-          <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
                     <path d="M10 17l5-5-5-5"></path>
                     <path d="M15 12H3"></path>
@@ -142,7 +142,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
                         className="flex items-center justify-center w-16 h-16 rounded-full bg-slate-900/90 border border-cyan-500/30 text-cyan-300 shadow-lg shadow-cyan-500/20 hover:bg-cyan-500 hover:text-white hover:scale-110 transition-all duration-300"
                         onClick={() => setIsOpen(false)}
                       >
-                        {React.cloneElement(item.icon as React.ReactElement, { className: 'w-8 h-8' })}
+                        {item.icon}
                       </Link>
                     ) : (
                       <button
@@ -152,7 +152,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
                         }}
                         className="flex items-center justify-center w-16 h-16 rounded-full bg-slate-900/90 border border-red-500/30 text-red-300 shadow-lg shadow-red-500/20 hover:bg-red-500 hover:text-white hover:scale-110 transition-all duration-300"
                       >
-                        {React.cloneElement(item.icon as React.ReactElement, { className: 'w-8 h-8' })}
+                        {item.icon}
                       </button>
                     )}
                     
