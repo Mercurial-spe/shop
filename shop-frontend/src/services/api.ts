@@ -242,6 +242,36 @@ class ApiService {
       body: JSON.stringify({ adminId: String(adminId) }),
     });
   }
+
+  // --- Analytics / Recommendations ---
+  async getAnalyticsOverview(adminId: number): Promise<any> {
+    return this.request<any>(`/analytics/admin/overview?adminId=${adminId}`);
+  }
+
+  async getAnalyticsRankings(adminId: number): Promise<any> {
+    return this.request<any>(`/analytics/admin/rankings?adminId=${adminId}`);
+  }
+
+  async getAnalyticsTrends(adminId: number, period: 'day' | 'week' | 'month' = 'day'): Promise<any> {
+    return this.request<any>(`/analytics/admin/trends?adminId=${adminId}&period=${period}`);
+  }
+
+  async getAnalyticsAnomalies(adminId: number): Promise<any> {
+    return this.request<any>(`/analytics/admin/anomalies?adminId=${adminId}`);
+  }
+
+  async getCustomerProfiles(adminId: number): Promise<any[]> {
+    return this.request<any[]>(`/analytics/admin/customer-profiles?adminId=${adminId}`);
+  }
+
+  async getUserRecommendations(userId: number, limit: number = 6): Promise<any[]> {
+    return this.request<any[]>(`/recommendations/user/${userId}?limit=${limit}`);
+  }
+
+  async getRelatedProducts(productId: number, userId?: number, limit: number = 6): Promise<any[]> {
+    const userQuery = userId ? `&userId=${userId}` : '';
+    return this.request<any[]>(`/recommendations/products/${productId}/related?limit=${limit}${userQuery}`);
+  }
 }
 
 export const apiService = new ApiService();

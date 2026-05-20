@@ -173,6 +173,22 @@ public class DemoDataService {
                 browseLogRepository.save(log);
             }
         }
+        generateSuspiciousBrowseBurst(customers.get(1), products.get(7), now);
+    }
+
+    private void generateSuspiciousBrowseBurst(User customer, Product product, LocalDateTime now) {
+        for (int i = 0; i < 28; i++) {
+            BrowseLog log = new BrowseLog();
+            log.setUserId(customer.getId());
+            log.setUsername(customer.getUsername());
+            log.setProductId(product.getId());
+            log.setProductName(product.getName());
+            log.setProductCategory(product.getCategory());
+            log.setDurationSeconds(3 + (i % 9));
+            log.setIpAddress("10.0.99.250");
+            log.setCreatedAt(now.minusHours(1).plusMinutes(i));
+            browseLogRepository.save(log);
+        }
     }
 
     private Product pickBrowseProduct(List<Product> products, int day, int index) {
