@@ -15,6 +15,12 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface SellerCreateRequest {
+  username: string;
+  email: string;
+  password: string;
+}
+
 class ApiService {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -132,6 +138,34 @@ class ApiService {
 
   async getSellerStats(sellerId: number): Promise<any> {
     return this.request<any>(`/orders/seller/${sellerId}/stats`);
+  }
+
+  // --- Admin ---
+  async getSellers(adminId: number): Promise<User[]> {
+    return this.request<User[]>(`/admin/sellers?adminId=${adminId}`);
+  }
+
+  async createSeller(adminId: number, seller: SellerCreateRequest): Promise<User> {
+    return this.request<User>('/admin/sellers', {
+      method: 'POST',
+      body: JSON.stringify({ adminId: String(adminId), ...seller }),
+    });
+  }
+
+  async deleteSeller(adminId: number, sellerId: number): Promise<void> {
+    const url = `${API_BASE_URL}/admin/sellers/${sellerId}?adminId=${adminId}`;
+    const response = await fetch(url, { method: 'DELETE' });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Delete seller failed');
+    }
+  }
+
+  async resetSellerPassword(adminId: number, sellerId: number, password: string): Promise<User> {
+    return this.request<User>(`/admin/sellers/${sellerId}/reset-password`, {
+      method: 'POST',
+      body: JSON.stringify({ adminId: String(adminId), password }),
+    });
   }
 }
 

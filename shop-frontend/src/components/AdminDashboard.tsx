@@ -9,15 +9,65 @@ interface AdminDashboardProps {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [sellers, setSellers] = useState<User[]>([]);
+  const [sellerForm, setSellerForm] = useState({
+    username: '',
+    email: '',
+    password: 'seller123',
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [sellerMessage, setSellerMessage] = useState('');
 
   useEffect(() => {
-    apiService.getProducts()
-      .then(setProducts)
+    Promise.all([
+      apiService.getProducts(),
+      apiService.getSellers(user.id),
+    ])
+      .then(([productData, sellerData]) => {
+        setProducts(productData);
+        setSellers(sellerData);
+      })
       .catch((err: any) => setError(err.message || '加载管理数据失败。'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [user.id]);
+
+  const handleCreateSeller = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSellerMessage('');
+    setError('');
+    try {
+      const created = await apiService.createSeller(user.id, sellerForm);
+      setSellers((prev) => [...prev, created].sort((a, b) => a.username.localeCompare(b.username)));
+      setSellerForm({ username: '', email: '', password: 'seller123' });
+      setSellerMessage(`已添加销售人员 ${created.username}`);
+    } catch (err: any) {
+      setError(err.message || '添加销售人员失败。');
+    }
+  };
+
+  const handleResetPassword = async (seller: User) => {
+    const password = window.prompt(`请输入 ${seller.username} 的新密码`, 'seller123');
+    if (!password) return;
+    try {
+      await apiService.resetSellerPassword(user.id, seller.id, password);
+      setSellerMessage(`已重置 ${seller.username} 的密码`);
+    } catch (err: any) {
+      setError(err.message || '重置密码失败。');
+    }
+  };
+
+  const handleDeleteSeller = async (seller: User) => {
+    const confirmed = window.confirm(`确认删除销售人员 ${seller.username}？有关联商品的销售人员不能直接删除。`);
+    if (!confirmed) return;
+    try {
+      await apiService.deleteSeller(user.id, seller.id);
+      setSellers((prev) => prev.filter((item) => item.id !== seller.id));
+      setSellerMessage(`已删除销售人员 ${seller.username}`);
+    } catch (err: any) {
+      setError(err.message || '删除销售人员失败。');
+    }
+  };
 
   const lowStockProducts = products.filter((product) => (product.stockQuantity ?? 0) <= 5);
   const totalInventory = products.reduce((sum, product) => sum + (product.stockQuantity ?? 0), 0);
@@ -59,8 +109,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
 
       <section className="grid grid-cols-1 gap-5 md:grid-cols-3">
         <div className="rounded-2xl border border-white/15 bg-white/10 p-6 text-white backdrop-blur">
-          <p className="text-sm text-slate-300">商品总数</p>
-          <p className="mt-2 text-4xl font-black">{products.length}</p>
+          <p className="text-sm text-slate-300">销售人员</p>
+          <p className="mt-2 text-4xl font-black">{sellers.length}</p>
         </div>
         <div className="rounded-2xl border border-white/15 bg-white/10 p-6 text-white backdrop-blur">
           <p className="text-sm text-slate-300">总库存</p>
@@ -76,20 +126,65 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
         <div className="rounded-3xl border border-white/15 bg-white/10 p-6 text-white backdrop-blur">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-2xl font-black">销售人员管理</h2>
-            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-slate-200">后续接入账号管理接口</span>
+            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-slate-200">Admin only</span>
           </div>
+
+          <form onSubmit={handleCreateSeller} className="mb-5 grid gap-3 rounded-2xl border border-white/10 bg-slate-950/40 p-4 md:grid-cols-[1fr_1fr_1fr_auto]">
+            <input
+              value={sellerForm.username}
+              onChange={(event) => setSellerForm((prev) => ({ ...prev, username: event.target.value }))}
+              className="rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400 focus:border-violet-300"
+              placeholder="销售账号"
+              required
+            />
+            <input
+              type="email"
+              value={sellerForm.email}
+              onChange={(event) => setSellerForm((prev) => ({ ...prev, email: event.target.value }))}
+              className="rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400 focus:border-violet-300"
+              placeholder="邮箱"
+              required
+            />
+            <input
+              value={sellerForm.password}
+              onChange={(event) => setSellerForm((prev) => ({ ...prev, password: event.target.value }))}
+              className="rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400 focus:border-violet-300"
+              placeholder="初始密码"
+              required
+            />
+            <button className="rounded-xl bg-violet-300 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-violet-200">
+              添加
+            </button>
+          </form>
+
+          {sellerMessage && (
+            <div className="mb-4 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-3 text-sm font-semibold text-emerald-100">
+              {sellerMessage}
+            </div>
+          )}
+
           <div className="grid gap-3 md:grid-cols-2">
-            {[
-              ['seller01', '销售一组', '负责数码旗舰与高客单价商品'],
-              ['seller02', '销售二组', '负责配件、穿戴与高频消费品'],
-            ].map(([name, team, desc]) => (
-              <div key={name} className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                <p className="text-lg font-black">{name}</p>
-                <p className="mt-1 text-sm font-semibold text-violet-200">{team}</p>
-                <p className="mt-2 text-sm text-slate-300">{desc}</p>
-                <button className="mt-4 rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/20">
-                  重置密码
-                </button>
+            {sellers.map((seller) => (
+              <div key={seller.id} className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+                <p className="text-lg font-black">{seller.username}</p>
+                <p className="mt-1 text-sm font-semibold text-violet-200">{seller.email || '未设置邮箱'}</p>
+                <p className="mt-2 text-sm text-slate-300">角色：销售人员 / 可管理自己的商品和订单。</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleResetPassword(seller)}
+                    className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/20"
+                  >
+                    重置密码
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteSeller(seller)}
+                    className="rounded-xl bg-red-400/15 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-400/25"
+                  >
+                    删除
+                  </button>
+                </div>
               </div>
             ))}
           </div>
