@@ -37,6 +37,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
       navigate('/login');
       return;
     }
+    if (user.role !== 'CUSTOMER') {
+      alert('只有顾客账号可以加入购物车。');
+      return;
+    }
     if (product) {
       try {
         await apiService.addToCart(user.id, product.id, quantity);
@@ -51,6 +55,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
     if (!user) {
       alert('请先登录。');
       navigate('/login');
+      return;
+    }
+    if (user.role !== 'CUSTOMER') {
+      alert('只有顾客账号可以购买商品。');
       return;
     }
     if (product) {

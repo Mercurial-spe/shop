@@ -17,8 +17,13 @@ public class CartController {
     private CartService cartService;
 
     @GetMapping("/{userId}")
-    public List<CartItem> getCart(@PathVariable Long userId) {
-        return cartService.getCartByUser(userId);
+    public ResponseEntity<?> getCart(@PathVariable Long userId) {
+        try {
+            List<CartItem> items = cartService.getCartByUser(userId);
+            return ResponseEntity.ok(items);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/add")
@@ -37,8 +42,12 @@ public class CartController {
 
     @DeleteMapping("/{userId}/item/{cartItemId}")
     public ResponseEntity<?> removeFromCart(@PathVariable Long userId, @PathVariable Long cartItemId) {
-        cartService.removeFromCart(cartItemId);
-        return ResponseEntity.noContent().build();
+        try {
+            cartService.removeFromCart(userId, cartItemId);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{userId}/clear")

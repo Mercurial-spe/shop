@@ -59,16 +59,19 @@ class ApiService {
     return this.request<Product[]>(`/products/seller/${sellerId}`);
   }
 
-  async deleteProduct(id: number): Promise<void> {
-    const url = `${API_BASE_URL}/products/${id}`;
+  async deleteProduct(id: number, sellerId: number): Promise<void> {
+    const url = `${API_BASE_URL}/products/${id}?sellerId=${sellerId}`;
     const response = await fetch(url, { method: 'DELETE' });
-    if (!response.ok) throw new Error('Delete failed');
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Delete failed');
+    }
   }
 
-  async updateProduct(id: number, updates: Partial<Product>): Promise<Product> {
+  async updateProduct(id: number, sellerId: number, updates: Partial<Product>): Promise<Product> {
     return this.request<Product>(`/products/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(updates),
+      body: JSON.stringify({ ...updates, sellerId }),
     });
   }
 
@@ -115,13 +118,19 @@ class ApiService {
   async clearCart(userId: number): Promise<void> {
     const url = `${API_BASE_URL}/cart/${userId}/clear`;
     const response = await fetch(url, { method: 'DELETE' });
-    if (!response.ok) throw new Error('Clear cart failed');
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Clear cart failed');
+    }
   }
 
   async checkoutCart(userId: number): Promise<void> {
     const url = `${API_BASE_URL}/cart/${userId}/checkout`;
     const response = await fetch(url, { method: 'POST' });
-    if (!response.ok) throw new Error('Checkout failed');
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Checkout failed');
+    }
   }
 
   async getOrdersByUser(userId: number): Promise<any[]> {

@@ -2,12 +2,9 @@ package com.example.shop_backend.service;
 
 import com.example.shop_backend.model.Product;
 import com.example.shop_backend.model.User;
-import com.example.shop_backend.model.UserRole;
 import com.example.shop_backend.repository.ProductRepository;
-import com.example.shop_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,18 +16,14 @@ public class ProductService {
     private ProductRepository productRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private AccessControlService accessControlService;
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
     public List<Product> getProductsBySeller(Long sellerId) {
-        User seller = userRepository.findById(sellerId)
-                .orElseThrow(() -> new RuntimeException("卖家不存在"));
-        if (seller.getRole() != UserRole.SELLER) {
-            throw new RuntimeException("该账号不是销售管理");
-        }
+        User seller = accessControlService.requireSeller(sellerId);
         return productRepository.findBySeller(seller);
     }
 
@@ -39,17 +32,17 @@ public class ProductService {
     }
 
     public Product createProduct(Product product, Long sellerId) {
-        User seller = userRepository.findById(sellerId)
-                .orElseThrow(() -> new RuntimeException("卖家不存在"));
-        if (seller.getRole() != UserRole.SELLER) {
-            throw new RuntimeException("只有销售人员可以发布商品");
-        }
+        User seller = accessControlService.requireSeller(sellerId);
         product.setSeller(seller);
         return productRepository.save(product);
     }
 
-    public Optional<Product> updateProduct(Long id, Product productDetails) {
+    public Optional<Product> updateProduct(Long id, Product productDetails, Long sellerId) {
+        User seller = accessControlService.requireSeller(sellerId);
         return productRepository.findById(id).map(product -> {
+            if (product.getSeller() == null || !product.getSeller().getId().equals(seller.getId())) {
+                throw new RuntimeException("只能修改自己发布的商品");
+            }
             product.setName(productDetails.getName());
             product.setDescription(productDetails.getDescription());
             product.setPrice(productDetails.getPrice());
@@ -59,8 +52,12 @@ public class ProductService {
         });
     }
 
-    public boolean deleteProduct(Long id) {
+    public boolean deleteProduct(Long id, Long sellerId) {
+        User seller = accessControlService.requireSeller(sellerId);
         return productRepository.findById(id).map(product -> {
+            if (product.getSeller() == null || !product.getSeller().getId().equals(seller.getId())) {
+                throw new RuntimeException("只能删除自己发布的商品");
+            }
             productRepository.delete(product);
             return true;
         }).orElse(false);

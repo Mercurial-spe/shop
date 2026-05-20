@@ -114,7 +114,7 @@ function AppContent() {
           path="/cart"
           element={
             <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full">
-              {user ? <Cart user={user} /> : <Navigate to="/login" />}
+              {user?.role === 'CUSTOMER' ? <Cart user={user} /> : <Navigate to={user ? defaultPath : '/login'} />}
             </div>
           }
         />
@@ -123,7 +123,7 @@ function AppContent() {
           path="/orders"
           element={
             <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full">
-              {user ? <Orders user={user} /> : <Navigate to="/login" />}
+              {user?.role === 'CUSTOMER' ? <Orders user={user} /> : <Navigate to={user ? defaultPath : '/login'} />}
             </div>
           }
         />
@@ -132,7 +132,7 @@ function AppContent() {
           path="/orders/:id"
           element={
             <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full">
-              {user ? <OrderDetail user={user} /> : <Navigate to="/login" />}
+              {user?.role === 'CUSTOMER' ? <OrderDetail user={user} /> : <Navigate to={user ? defaultPath : '/login'} />}
             </div>
           }
         />

@@ -68,10 +68,10 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
 
   const handleDelete = async (id: number) => {
     try {
-      await apiService.deleteProduct(id);
+      await apiService.deleteProduct(id, user.id);
       setProducts((prev) => prev.filter((item) => item.id !== id));
-    } catch (err) {
-      alert('删除失败，请稍后再试。');
+    } catch (err: any) {
+      alert(err.message || '删除失败，请稍后再试。');
     }
   };
 
@@ -90,7 +90,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
     }
 
     try {
-      const updated = await apiService.updateProduct(product.id, {
+      const updated = await apiService.updateProduct(product.id, user.id, {
         name: product.name,
         description: product.description,
         price: updatedPrice,
@@ -98,8 +98,8 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
         stockQuantity: updatedStock,
       });
       setProducts((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
-    } catch (err) {
-      alert('更新失败，请稍后再试。');
+    } catch (err: any) {
+      alert(err.message || '更新失败，请稍后再试。');
     }
   };
 

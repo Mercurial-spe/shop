@@ -58,18 +58,32 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product productDetails) {
-        return productService.updateProduct(id, productDetails)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductRequest request) {
+        try {
+            Product productDetails = new Product();
+            productDetails.setName(request.getName());
+            productDetails.setDescription(request.getDescription());
+            productDetails.setPrice(request.getPrice());
+            productDetails.setImageUrl(request.getImageUrl());
+            productDetails.setStockQuantity(request.getStockQuantity());
+            return productService.updateProduct(id, productDetails, request.getSellerId())
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        if (productService.deleteProduct(id)) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id, @RequestParam Long sellerId) {
+        try {
+            if (productService.deleteProduct(id, sellerId)) {
+                return ResponseEntity.noContent().build();
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

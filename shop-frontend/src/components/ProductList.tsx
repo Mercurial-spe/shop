@@ -43,18 +43,26 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   };
 
   const handleDelete = async (id: number) => {
+    if (user?.role !== 'SELLER') {
+      alert('只有销售人员可以删除商品。');
+      return;
+    }
     try {
-      await apiService.deleteProduct(id);
+      await apiService.deleteProduct(id, user.id);
       setProducts((prev) => prev.filter((p) => p.id !== id));
-    } catch (err) {
+    } catch (err: any) {
       console.error('删除商品失败', err);
-      alert('删除失败，请稍后再试。');
+      alert(err.message || '删除失败，请稍后再试。');
     }
   };
 
   const handleAddToCart = async (productId: number) => {
     if (!user) {
       navigate('/login');
+      return;
+    }
+    if (user.role !== 'CUSTOMER') {
+      alert('只有顾客账号可以加入购物车。');
       return;
     }
     try {
@@ -160,7 +168,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
             >
               <ProductCard
                 product={product}
-                onDelete={user?.role === 'SELLER' ? handleDelete : undefined}
+                onDelete={user?.role === 'SELLER' && product.seller?.id === user.id ? handleDelete : undefined}
                 onAddToCart={handleAddToCart}
                 className="w-full h-full"
               />

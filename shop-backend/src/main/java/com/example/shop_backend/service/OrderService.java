@@ -33,13 +33,16 @@ public class OrderService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private AccessControlService accessControlService;
+
     public List<Order> getOrdersByUser(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
+        User user = accessControlService.requireCustomer(userId);
         return orderRepository.findByUser(user);
     }
 
     public Order getOrderForUser(Long orderId, Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
+        User user = accessControlService.requireCustomer(userId);
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("订单不存在"));
         if (!order.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("无权查看该订单");
@@ -48,13 +51,13 @@ public class OrderService {
     }
 
     public List<OrderItem> getOrdersBySeller(Long sellerId) {
-        User seller = userRepository.findById(sellerId).orElseThrow(() -> new RuntimeException("卖家不存在"));
+        User seller = accessControlService.requireSeller(sellerId);
         return orderItemRepository.findBySeller(seller);
     }
 
     @Transactional
     public Order checkout(Long userId, List<CartItem> items) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
+        User user = accessControlService.requireCustomer(userId);
 
         Order order = new Order();
         order.setUser(user);
@@ -90,8 +93,11 @@ public class OrderService {
 
     @Transactional
     public Order purchaseSingle(Long userId, Long productId, int quantity) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
+        User user = accessControlService.requireCustomer(userId);
         Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("商品不存在"));
+        if (quantity <= 0) {
+            throw new RuntimeException("商品数量必须大于 0");
+        }
 
         Integer stock = product.getStockQuantity();
         if (stock != null) {
@@ -123,7 +129,7 @@ public class OrderService {
     }
 
     public Map<String, Object> getSellerStats(Long sellerId) {
-        User seller = userRepository.findById(sellerId).orElseThrow(() -> new RuntimeException("卖家不存在"));
+        User seller = accessControlService.requireSeller(sellerId);
         List<OrderItem> items = orderItemRepository.findBySeller(seller);
 
         double totalRevenue = items.stream()
