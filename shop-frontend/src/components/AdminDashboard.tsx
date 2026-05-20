@@ -7,9 +7,73 @@ interface AdminDashboardProps {
   user: User;
 }
 
+interface AnalyticsOverview {
+  totalRevenue?: number;
+  totalOrders?: number;
+  totalUnits?: number;
+  conversionRate?: number;
+  averageOrderValue?: number;
+  activeCustomers?: number;
+  customerCount?: number;
+  forecast?: {
+    growthRate?: number;
+    predictedNext7DaysRevenue?: number;
+  };
+}
+
+interface RankingItem {
+  id?: number;
+  name: string;
+  revenue: number;
+  units: number;
+}
+
+interface TrendPoint {
+  period: string;
+  revenue: number;
+  units: number;
+}
+
+interface AnomalyItem {
+  type: string;
+  title: string;
+  productName?: string;
+  ipAddress?: string;
+  browseCount?: number;
+  message: string;
+}
+
+interface CustomerProfile {
+  userId: number;
+  username: string;
+  region: string;
+  purchasePower: string;
+  favoriteCategory: string;
+  totalSpend: number;
+  orderCount: number;
+  browseCount: number;
+}
+
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [sellers, setSellers] = useState<User[]>([]);
+  const [analytics, setAnalytics] = useState<{
+    overview: AnalyticsOverview | null;
+    rankings: {
+      products: RankingItem[];
+      categories: RankingItem[];
+      sellers: RankingItem[];
+    } | null;
+    trends: { points: TrendPoint[] } | null;
+    anomalies: { all: AnomalyItem[]; total: number } | null;
+    profiles: CustomerProfile[];
+  }>({
+    overview: null,
+    rankings: null,
+    trends: null,
+    anomalies: null,
+    profiles: [],
+  });
   const [logSummary, setLogSummary] = useState({
     login: [] as any[],
     browse: [] as any[],
@@ -34,8 +98,25 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
       apiService.getBrowseLogs(user.id),
       apiService.getPurchaseLogs(user.id),
       apiService.getOperationLogs(user.id),
+      apiService.getAnalyticsOverview(user.id),
+      apiService.getAnalyticsRankings(user.id),
+      apiService.getAnalyticsTrends(user.id, 'day'),
+      apiService.getAnalyticsAnomalies(user.id),
+      apiService.getCustomerProfiles(user.id),
     ])
-      .then(([productData, sellerData, loginLogs, browseLogs, purchaseLogs, operationLogs]) => {
+      .then(([
+        productData,
+        sellerData,
+        loginLogs,
+        browseLogs,
+        purchaseLogs,
+        operationLogs,
+        overview,
+        rankings,
+        trends,
+        anomalies,
+        profiles,
+      ]) => {
         setProducts(productData);
         setSellers(sellerData);
         setLogSummary({
@@ -43,6 +124,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
           browse: browseLogs,
           purchase: purchaseLogs,
           operation: operationLogs,
+        });
+        setAnalytics({
+          overview,
+          rankings,
+          trends,
+          anomalies,
+          profiles,
         });
       })
       .catch((err: any) => setError(err.message || '加载管理数据失败。'))
@@ -87,13 +175,30 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   };
 
   const refreshDashboard = async () => {
-    const [productData, sellerData, loginLogs, browseLogs, purchaseLogs, operationLogs] = await Promise.all([
+    const [
+      productData,
+      sellerData,
+      loginLogs,
+      browseLogs,
+      purchaseLogs,
+      operationLogs,
+      overview,
+      rankings,
+      trends,
+      anomalies,
+      profiles,
+    ] = await Promise.all([
       apiService.getProducts(),
       apiService.getSellers(user.id),
       apiService.getLoginLogs(user.id),
       apiService.getBrowseLogs(user.id),
       apiService.getPurchaseLogs(user.id),
       apiService.getOperationLogs(user.id),
+      apiService.getAnalyticsOverview(user.id),
+      apiService.getAnalyticsRankings(user.id),
+      apiService.getAnalyticsTrends(user.id, 'day'),
+      apiService.getAnalyticsAnomalies(user.id),
+      apiService.getCustomerProfiles(user.id),
     ]);
     setProducts(productData);
     setSellers(sellerData);
@@ -102,6 +207,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
       browse: browseLogs,
       purchase: purchaseLogs,
       operation: operationLogs,
+    });
+    setAnalytics({
+      overview,
+      rankings,
+      trends,
+      anomalies,
+      profiles,
     });
   };
 
@@ -130,11 +242,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     }
   };
 
-  const lowStockProducts = products.filter((product) => (product.stockQuantity ?? 0) <= 5);
   const totalInventory = products.reduce((sum, product) => sum + (product.stockQuantity ?? 0), 0);
   const averagePrice = products.length
     ? products.reduce((sum, product) => sum + product.price, 0) / products.length
     : 0;
+  const trendPoints = analytics.trends?.points?.slice(-10) || [];
+  const maxTrendRevenue = Math.max(...trendPoints.map((point) => point.revenue || 0), 1);
+  const anomalyItems = analytics.anomalies?.all || [];
+  const money = (value?: number) => `¥${(value || 0).toLocaleString('zh-CN', { maximumFractionDigits: 0 })}`;
+  const percent = (value?: number) => `${(((value || 0) * 100)).toFixed(1)}%`;
 
   if (loading) {
     return (
@@ -170,17 +286,99 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
 
       <section className="grid grid-cols-1 gap-5 md:grid-cols-3">
         <div className="rounded-2xl border border-white/15 bg-white/10 p-6 text-white backdrop-blur">
-          <p className="text-sm text-slate-300">销售人员</p>
-          <p className="mt-2 text-4xl font-black">{sellers.length}</p>
+          <p className="text-sm text-slate-300">总销售额</p>
+          <p className="mt-2 text-4xl font-black">{money(analytics.overview?.totalRevenue)}</p>
+          <p className="mt-2 text-xs font-semibold text-emerald-200">预测下 7 天 {money(analytics.overview?.forecast?.predictedNext7DaysRevenue)}</p>
         </div>
         <div className="rounded-2xl border border-white/15 bg-white/10 p-6 text-white backdrop-blur">
-          <p className="text-sm text-slate-300">总库存</p>
-          <p className="mt-2 text-4xl font-black">{totalInventory}</p>
+          <p className="text-sm text-slate-300">订单 / 售出件数</p>
+          <p className="mt-2 text-4xl font-black">{analytics.overview?.totalOrders || 0}</p>
+          <p className="mt-2 text-xs font-semibold text-cyan-100">售出 {analytics.overview?.totalUnits || 0} 件</p>
         </div>
         <div className="rounded-2xl border border-white/15 bg-white/10 p-6 text-white backdrop-blur">
-          <p className="text-sm text-slate-300">平均标价</p>
-          <p className="mt-2 text-4xl font-black">¥{averagePrice.toFixed(0)}</p>
+          <p className="text-sm text-slate-300">转化率 / 客单价</p>
+          <p className="mt-2 text-4xl font-black">{percent(analytics.overview?.conversionRate)}</p>
+          <p className="mt-2 text-xs font-semibold text-violet-100">客单价 {money(analytics.overview?.averageOrderValue)}</p>
         </div>
+      </section>
+
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+        <div className="rounded-3xl border border-white/15 bg-white/10 p-6 text-white backdrop-blur">
+          <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-2xl font-black">销售趋势</h2>
+              <p className="mt-1 text-sm text-slate-300">最近 10 个日维度销售点，来自购买日志聚合。</p>
+            </div>
+            <span className="rounded-full bg-emerald-300/15 px-3 py-1 text-xs font-bold text-emerald-100">
+              增长 {percent(analytics.overview?.forecast?.growthRate)}
+            </span>
+          </div>
+          <div className="grid h-64 grid-cols-10 items-end gap-2 border-b border-white/10 pb-4">
+            {trendPoints.map((point) => (
+              <div key={point.period} className="flex h-full min-w-0 flex-col justify-end gap-2">
+                <div className="flex flex-1 items-end">
+                  <div
+                    className="w-full rounded-t-xl bg-gradient-to-t from-cyan-400 to-emerald-200 shadow-lg shadow-cyan-400/20"
+                    style={{ height: `${Math.max(8, ((point.revenue || 0) / maxTrendRevenue) * 100)}%` }}
+                    title={`${point.period}: ${money(point.revenue)}`}
+                  />
+                </div>
+                <div className="truncate text-center text-[11px] font-semibold text-slate-300">{point.period.slice(5)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-white/15 bg-white/10 p-6 text-white backdrop-blur">
+          <h2 className="text-2xl font-black">经营概览</h2>
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+              <p className="text-xs text-slate-400">销售人员</p>
+              <p className="mt-2 text-3xl font-black">{sellers.length}</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+              <p className="text-xs text-slate-400">总库存</p>
+              <p className="mt-2 text-3xl font-black">{totalInventory}</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+              <p className="text-xs text-slate-400">活跃顾客</p>
+              <p className="mt-2 text-3xl font-black">{analytics.overview?.activeCustomers || 0}</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+              <p className="text-xs text-slate-400">平均标价</p>
+              <p className="mt-2 text-3xl font-black">¥{averagePrice.toFixed(0)}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        {[
+          ['商品销售排行', analytics.rankings?.products || []],
+          ['类别销售排行', analytics.rankings?.categories || []],
+          ['销售人员业绩', analytics.rankings?.sellers || []],
+        ].map(([title, rows]) => (
+          <div key={title as string} className="rounded-3xl border border-white/15 bg-white/10 p-6 text-white backdrop-blur">
+            <h2 className="text-xl font-black">{title as string}</h2>
+            <div className="mt-4 space-y-3">
+              {(rows as RankingItem[]).slice(0, 5).map((row, index) => (
+                <div key={`${title}-${row.name}`} className="rounded-2xl border border-white/10 bg-slate-950/40 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="min-w-0 truncate text-sm font-bold text-white">{index + 1}. {row.name}</p>
+                    <span className="shrink-0 text-xs font-bold text-cyan-100">{row.units} 件</span>
+                  </div>
+                  <div className="mt-2 h-2 rounded-full bg-white/10">
+                    <div
+                      className="h-2 rounded-full bg-cyan-300"
+                      style={{ width: `${Math.min(100, Math.max(8, (row.revenue / Math.max(...(rows as RankingItem[]).map((item) => item.revenue || 0), 1)) * 100))}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 text-xs font-semibold text-slate-300">{money(row.revenue)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </section>
 
       <section className="rounded-3xl border border-emerald-300/20 bg-emerald-400/10 p-6 text-white backdrop-blur">
@@ -328,19 +526,61 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
 
         <div className="rounded-3xl border border-amber-300/20 bg-amber-400/10 p-6 text-white backdrop-blur">
           <h2 className="text-2xl font-black">异常预警</h2>
-          <p className="mt-2 text-sm text-amber-100/80">当前先展示低库存预警，后续补销量突增、低迷和高频浏览。</p>
+          <p className="mt-2 text-sm text-amber-100/80">规则型监控：低库存、销量突增、高浏览低购买和疑似高频浏览。</p>
           <div className="mt-5 space-y-3">
-            {lowStockProducts.length === 0 ? (
-              <p className="rounded-2xl bg-white/10 p-4 text-sm text-slate-200">暂无低库存商品。</p>
+            {anomalyItems.length === 0 ? (
+              <p className="rounded-2xl bg-white/10 p-4 text-sm text-slate-200">暂无异常。</p>
             ) : (
-              lowStockProducts.map((product) => (
-                <div key={product.id} className="rounded-2xl border border-amber-200/20 bg-slate-950/40 p-4">
-                  <p className="font-black">{product.name}</p>
-                  <p className="mt-1 text-sm text-amber-100">库存剩余 {product.stockQuantity ?? 0}</p>
+              anomalyItems.slice(0, 6).map((item, index) => (
+                <div key={`${item.type}-${index}`} className="rounded-2xl border border-amber-200/20 bg-slate-950/40 p-4">
+                  <p className="font-black">{item.title}</p>
+                  <p className="mt-1 text-sm text-amber-100">{item.productName || item.ipAddress || '系统监控'}</p>
+                  <p className="mt-2 text-xs text-slate-300">{item.message}</p>
                 </div>
               ))
             )}
           </div>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-white/15 bg-white/10 p-6 text-white backdrop-blur">
+        <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 className="text-2xl font-black">用户画像</h2>
+            <p className="mt-1 text-sm text-slate-300">基于购买日志和浏览日志生成地域、购买力和偏好分类。</p>
+          </div>
+          <span className="rounded-full bg-violet-300/15 px-3 py-1 text-xs font-bold text-violet-100">
+            {analytics.profiles.length} 个顾客画像
+          </span>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {analytics.profiles.map((profile) => (
+            <div key={profile.userId} className="rounded-2xl border border-white/10 bg-slate-950/40 p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-lg font-black">{profile.username}</p>
+                  <p className="text-sm font-semibold text-violet-200">{profile.region} / {profile.favoriteCategory}</p>
+                </div>
+                <span className="rounded-full bg-cyan-300/15 px-3 py-1 text-xs font-black text-cyan-100">
+                  {profile.purchasePower}
+                </span>
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-xl bg-white/10 p-3">
+                  <p className="text-xs text-slate-400">消费额</p>
+                  <p className="mt-1 text-sm font-black">{money(profile.totalSpend)}</p>
+                </div>
+                <div className="rounded-xl bg-white/10 p-3">
+                  <p className="text-xs text-slate-400">订单</p>
+                  <p className="mt-1 text-sm font-black">{profile.orderCount}</p>
+                </div>
+                <div className="rounded-xl bg-white/10 p-3">
+                  <p className="text-xs text-slate-400">浏览</p>
+                  <p className="mt-1 text-sm font-black">{profile.browseCount}</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     </div>
