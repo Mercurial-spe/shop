@@ -4,6 +4,7 @@ import com.example.shop_backend.model.User;
 import com.example.shop_backend.service.AccessControlService;
 import com.example.shop_backend.service.AdminService;
 import com.example.shop_backend.service.AuditLogService;
+import com.example.shop_backend.service.DemoDataService;
 import com.example.shop_backend.util.RequestIpUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,9 @@ public class AdminController {
 
     @Autowired
     private AuditLogService auditLogService;
+
+    @Autowired
+    private DemoDataService demoDataService;
 
     @GetMapping("/sellers")
     public ResponseEntity<?> listSellers(@RequestParam Long adminId) {
@@ -88,6 +92,16 @@ public class AdminController {
                     RequestIpUtil.clientIp(request)
             );
             return ResponseEntity.ok(seller);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/demo/reset")
+    public ResponseEntity<?> resetDemoData(@RequestBody Map<String, String> payload) {
+        try {
+            Long adminId = parseId(payload.get("adminId"));
+            return ResponseEntity.ok(demoDataService.resetDemoData(adminId));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -24,6 +24,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [sellerMessage, setSellerMessage] = useState('');
+  const [demoResetMessage, setDemoResetMessage] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -85,6 +86,41 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     }
   };
 
+  const refreshDashboard = async () => {
+    const [productData, sellerData, loginLogs, browseLogs, purchaseLogs, operationLogs] = await Promise.all([
+      apiService.getProducts(),
+      apiService.getSellers(user.id),
+      apiService.getLoginLogs(user.id),
+      apiService.getBrowseLogs(user.id),
+      apiService.getPurchaseLogs(user.id),
+      apiService.getOperationLogs(user.id),
+    ]);
+    setProducts(productData);
+    setSellers(sellerData);
+    setLogSummary({
+      login: loginLogs,
+      browse: browseLogs,
+      purchase: purchaseLogs,
+      operation: operationLogs,
+    });
+  };
+
+  const handleResetDemoData = async () => {
+    const confirmed = window.confirm('确认重置并生成演示数据？这会清空当前商品、订单、购物车和日志，但保留测试账号。');
+    if (!confirmed) return;
+    setDemoResetMessage('');
+    setError('');
+    try {
+      const summary = await apiService.resetDemoData(user.id);
+      await refreshDashboard();
+      setDemoResetMessage(
+        `已生成 ${summary.products} 个商品、${summary.orders} 个订单、${summary.browseLogs} 条浏览日志、${summary.purchaseLogs} 条购买日志。`
+      );
+    } catch (err: any) {
+      setError(err.message || '重置演示数据失败。');
+    }
+  };
+
   const lowStockProducts = products.filter((product) => (product.stockQuantity ?? 0) <= 5);
   const totalInventory = products.reduce((sum, product) => sum + (product.stockQuantity ?? 0), 0);
   const averagePrice = products.length
@@ -136,6 +172,29 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
           <p className="text-sm text-slate-300">平均标价</p>
           <p className="mt-2 text-4xl font-black">¥{averagePrice.toFixed(0)}</p>
         </div>
+      </section>
+
+      <section className="rounded-3xl border border-emerald-300/20 bg-emerald-400/10 p-6 text-white backdrop-blur">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-2xl font-black">系统维护 / 演示数据</h2>
+            <p className="mt-2 text-sm text-emerald-50/80">
+              一键生成 30 天订单、登录/浏览/购买/操作日志，以及低库存和销量突增样本。
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleResetDemoData}
+            className="rounded-xl bg-emerald-300 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-emerald-200"
+          >
+            重置演示数据
+          </button>
+        </div>
+        {demoResetMessage && (
+          <div className="mt-4 rounded-2xl border border-emerald-200/20 bg-slate-950/40 p-3 text-sm font-semibold text-emerald-100">
+            {demoResetMessage}
+          </div>
+        )}
       </section>
 
       <section className="rounded-3xl border border-white/15 bg-white/10 p-6 text-white backdrop-blur">

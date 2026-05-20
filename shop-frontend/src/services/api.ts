@@ -231,6 +231,13 @@ class ApiService {
   async getOperationLogs(adminId: number): Promise<any[]> {
     return this.request<any[]>(`/logs/operation?adminId=${adminId}`);
   }
+
+  async resetDemoData(adminId: number): Promise<Record<string, number>> {
+    return this.request<Record<string, number>>('/admin/demo/reset', {
+      method: 'POST',
+      body: JSON.stringify({ adminId: String(adminId) }),
+    });
+  }
 }
 
 export const apiService = new ApiService();
