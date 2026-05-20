@@ -121,6 +121,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     }
   };
 
+  const handleDownloadSalesReport = async () => {
+    setError('');
+    try {
+      await apiService.downloadAdminSalesReport(user.id);
+    } catch (err: any) {
+      setError(err.message || '导出销售报表失败。');
+    }
+  };
+
   const lowStockProducts = products.filter((product) => (product.stockQuantity ?? 0) <= 5);
   const totalInventory = products.reduce((sum, product) => sum + (product.stockQuantity ?? 0), 0);
   const averagePrice = products.length
@@ -182,13 +191,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               一键生成 30 天订单、登录/浏览/购买/操作日志，以及低库存和销量突增样本。
             </p>
           </div>
-          <button
-            type="button"
-            onClick={handleResetDemoData}
-            className="rounded-xl bg-emerald-300 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-emerald-200"
-          >
-            重置演示数据
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={handleDownloadSalesReport}
+              className="rounded-xl border border-emerald-200/30 bg-white/10 px-5 py-3 text-sm font-black text-emerald-50 transition hover:bg-white/20"
+            >
+              导出销售 CSV
+            </button>
+            <button
+              type="button"
+              onClick={handleResetDemoData}
+              className="rounded-xl bg-emerald-300 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-emerald-200"
+            >
+              重置演示数据
+            </button>
+          </div>
         </div>
         {demoResetMessage && (
           <div className="mt-4 rounded-2xl border border-emerald-200/20 bg-slate-950/40 p-3 text-sm font-semibold text-emerald-100">

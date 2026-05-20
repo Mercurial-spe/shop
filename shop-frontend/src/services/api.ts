@@ -48,6 +48,24 @@ class ApiService {
     return response.json();
   }
 
+  private async downloadCsv(endpoint: string, filename: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Download failed');
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  }
+
   async getProducts(): Promise<Product[]> {
     return this.request<Product[]>('/products');
   }
@@ -241,6 +259,18 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify({ adminId: String(adminId) }),
     });
+  }
+
+  async downloadAdminSalesReport(adminId: number): Promise<void> {
+    return this.downloadCsv(`/export/admin/sales?adminId=${adminId}`, 'admin-sales-report.csv');
+  }
+
+  async downloadSellerProductsReport(sellerId: number): Promise<void> {
+    return this.downloadCsv(`/export/seller/products?sellerId=${sellerId}`, 'seller-products-report.csv');
+  }
+
+  async downloadSellerOrdersReport(sellerId: number): Promise<void> {
+    return this.downloadCsv(`/export/seller/orders?sellerId=${sellerId}`, 'seller-orders-report.csv');
   }
 
   // --- Analytics / Recommendations ---

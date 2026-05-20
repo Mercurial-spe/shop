@@ -137,6 +137,22 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
     }
   };
 
+  const handleExportProducts = async () => {
+    try {
+      await apiService.downloadSellerProductsReport(user.id);
+    } catch (err: any) {
+      alert(err.message || '导出商品报表失败。');
+    }
+  };
+
+  const handleExportOrders = async () => {
+    try {
+      await apiService.downloadSellerOrdersReport(user.id);
+    } catch (err: any) {
+      alert(err.message || '导出订单报表失败。');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 space-y-4 text-slate-300">
@@ -164,16 +180,30 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
     <div className="space-y-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-3xl font-bold text-white">销售管理</h2>
-        <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className={`px-6 py-3 rounded-2xl font-bold transition-all shadow-md border border-white/20 backdrop-blur ${
-            showAddForm
-              ? 'bg-white/20 text-white hover:bg-white/30'
-              : 'bg-cyan-300 text-slate-900 hover:bg-cyan-200 shadow-cyan-200/30'
-          }`}
-        >
-          {showAddForm ? '关闭发布' : '新增商品'}
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={handleExportProducts}
+            className="rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/20"
+          >
+            导出商品 CSV
+          </button>
+          <button
+            onClick={handleExportOrders}
+            className="rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/20"
+          >
+            导出订单 CSV
+          </button>
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className={`px-6 py-3 rounded-2xl font-bold transition-all shadow-md border border-white/20 backdrop-blur ${
+              showAddForm
+                ? 'bg-white/20 text-white hover:bg-white/30'
+                : 'bg-cyan-300 text-slate-900 hover:bg-cyan-200 shadow-cyan-200/30'
+            }`}
+          >
+            {showAddForm ? '关闭发布' : '新增商品'}
+          </button>
+        </div>
       </div>
 
       {showAddForm && (
