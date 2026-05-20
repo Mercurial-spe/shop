@@ -51,6 +51,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onAddToCar
           <span className={`px-3 py-1 rounded-full text-[0.65rem] font-danger font-bold uppercase tracking-widest border ${stockTag.className}`}>
             {stockTag.label}
           </span>
+          {product.category && (
+            <span className="px-3 py-1 rounded-full text-[0.65rem] font-danger font-bold uppercase tracking-widest border bg-violet-400/20 text-violet-100 border-violet-300/30">
+              {product.category}
+            </span>
+          )}
         </div>
 
         <button

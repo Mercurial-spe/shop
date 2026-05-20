@@ -36,6 +36,9 @@ public class OrderService {
     @Autowired
     private AccessControlService accessControlService;
 
+    @Autowired
+    private AuditLogService auditLogService;
+
     public List<Order> getOrdersByUser(Long userId) {
         User user = accessControlService.requireCustomer(userId);
         return orderRepository.findByUser(user);
@@ -87,6 +90,7 @@ public class OrderService {
         }
 
         Order saved = orderRepository.save(order);
+        saved.getItems().forEach(item -> auditLogService.logPurchase(user, saved, item));
         emailService.sendOrderConfirmation(saved);
         return saved;
     }
@@ -124,6 +128,7 @@ public class OrderService {
         order.getItems().add(orderItem);
 
         Order saved = orderRepository.save(order);
+        saved.getItems().forEach(item -> auditLogService.logPurchase(user, saved, item));
         emailService.sendOrderConfirmation(saved);
         return saved;
     }

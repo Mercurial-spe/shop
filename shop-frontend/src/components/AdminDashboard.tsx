@@ -10,6 +10,12 @@ interface AdminDashboardProps {
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [sellers, setSellers] = useState<User[]>([]);
+  const [logSummary, setLogSummary] = useState({
+    login: [] as any[],
+    browse: [] as any[],
+    purchase: [] as any[],
+    operation: [] as any[],
+  });
   const [sellerForm, setSellerForm] = useState({
     username: '',
     email: '',
@@ -23,10 +29,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     Promise.all([
       apiService.getProducts(),
       apiService.getSellers(user.id),
+      apiService.getLoginLogs(user.id),
+      apiService.getBrowseLogs(user.id),
+      apiService.getPurchaseLogs(user.id),
+      apiService.getOperationLogs(user.id),
     ])
-      .then(([productData, sellerData]) => {
+      .then(([productData, sellerData, loginLogs, browseLogs, purchaseLogs, operationLogs]) => {
         setProducts(productData);
         setSellers(sellerData);
+        setLogSummary({
+          login: loginLogs,
+          browse: browseLogs,
+          purchase: purchaseLogs,
+          operation: operationLogs,
+        });
       })
       .catch((err: any) => setError(err.message || '加载管理数据失败。'))
       .finally(() => setLoading(false));
@@ -119,6 +135,49 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
         <div className="rounded-2xl border border-white/15 bg-white/10 p-6 text-white backdrop-blur">
           <p className="text-sm text-slate-300">平均标价</p>
           <p className="mt-2 text-4xl font-black">¥{averagePrice.toFixed(0)}</p>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-white/15 bg-white/10 p-6 text-white backdrop-blur">
+        <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 className="text-2xl font-black">数据采集日志</h2>
+            <p className="mt-1 text-sm text-slate-300">覆盖登录、浏览、购买、管理操作四类课程要求数据。</p>
+          </div>
+          <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-slate-200">Latest 100</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {[
+            ['登录日志', logSummary.login.length],
+            ['浏览日志', logSummary.browse.length],
+            ['购买日志', logSummary.purchase.length],
+            ['操作日志', logSummary.operation.length],
+          ].map(([label, count]) => (
+            <div key={label} className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+              <p className="text-sm text-slate-300">{label}</p>
+              <p className="mt-2 text-3xl font-black">{count}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 grid gap-3 lg:grid-cols-2">
+          {logSummary.browse.slice(0, 3).map((log) => (
+            <div key={`browse-${log.id}`} className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+              <p className="text-sm font-bold text-cyan-100">浏览：{log.productName}</p>
+              <p className="mt-1 text-xs text-slate-300">
+                {log.username || '游客'} / {log.productCategory || '未分类'} / 停留 {log.durationSeconds ?? 0}s / {log.ipAddress || 'unknown'}
+              </p>
+            </div>
+          ))}
+          {logSummary.operation.slice(0, 3).map((log) => (
+            <div key={`operation-${log.id}`} className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+              <p className="text-sm font-bold text-violet-100">操作：{log.action}</p>
+              <p className="mt-1 text-xs text-slate-300">
+                {log.username} / {log.content} / {log.ipAddress || 'unknown'}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 

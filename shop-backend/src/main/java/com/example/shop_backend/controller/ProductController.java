@@ -2,8 +2,11 @@ package com.example.shop_backend.controller;
 
 import com.example.shop_backend.controller.dto.ProductRequest;
 import com.example.shop_backend.model.Product;
+import com.example.shop_backend.service.AuditLogService;
 import com.example.shop_backend.service.OrderService;
 import com.example.shop_backend.service.ProductService;
+import com.example.shop_backend.util.RequestIpUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +23,9 @@ public class ProductController {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private AuditLogService auditLogService;
 
     @GetMapping
     public List<Product> getAllProducts() {
@@ -43,31 +49,48 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createProduct(@RequestBody ProductRequest request) {
+    public ResponseEntity<?> createProduct(@RequestBody ProductRequest request, HttpServletRequest httpRequest) {
         try {
             Product product = new Product();
             product.setName(request.getName());
             product.setDescription(request.getDescription());
             product.setPrice(request.getPrice());
+            product.setCategory(request.getCategory());
             product.setImageUrl(request.getImageUrl());
             product.setStockQuantity(request.getStockQuantity());
-            return ResponseEntity.ok(productService.createProduct(product, request.getSellerId()));
+            Product created = productService.createProduct(product, request.getSellerId());
+            auditLogService.logOperation(
+                    created.getSeller(),
+                    "PRODUCT_CREATE",
+                    "发布商品：" + created.getName(),
+                    RequestIpUtil.clientIp(httpRequest)
+            );
+            return ResponseEntity.ok(created);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductRequest request) {
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductRequest request, HttpServletRequest httpRequest) {
         try {
             Product productDetails = new Product();
             productDetails.setName(request.getName());
             productDetails.setDescription(request.getDescription());
             productDetails.setPrice(request.getPrice());
+            productDetails.setCategory(request.getCategory());
             productDetails.setImageUrl(request.getImageUrl());
             productDetails.setStockQuantity(request.getStockQuantity());
             return productService.updateProduct(id, productDetails, request.getSellerId())
-                    .map(ResponseEntity::ok)
+                    .map(product -> {
+                        auditLogService.logOperation(
+                                product.getSeller(),
+                                "PRODUCT_UPDATE",
+                                "修改商品：" + product.getName(),
+                                RequestIpUtil.clientIp(httpRequest)
+                        );
+                        return ResponseEntity.ok(product);
+                    })
                     .orElse(ResponseEntity.notFound().build());
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -75,9 +98,18 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable Long id, @RequestParam Long sellerId) {
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id, @RequestParam Long sellerId, HttpServletRequest httpRequest) {
         try {
+            Product productBeforeDelete = productService.getProductById(id).orElse(null);
             if (productService.deleteProduct(id, sellerId)) {
+                if (productBeforeDelete != null) {
+                    auditLogService.logOperation(
+                            productBeforeDelete.getSeller(),
+                            "PRODUCT_DELETE",
+                            "删除商品：" + productBeforeDelete.getName(),
+                            RequestIpUtil.clientIp(httpRequest)
+                    );
+                }
                 return ResponseEntity.noContent().build();
             } else {
                 return ResponseEntity.notFound().build();

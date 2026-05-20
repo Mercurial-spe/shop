@@ -20,6 +20,8 @@ public class Product {
     @Column(nullable = false)
     private Double price;
 
+    private String category;
+
     private String imageUrl;
 
     private Integer stockQuantity;

@@ -31,6 +31,17 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
     fetchProduct();
   }, [id]);
 
+  useEffect(() => {
+    if (!product) return;
+    const startedAt = Date.now();
+    return () => {
+      const durationSeconds = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
+      apiService.recordBrowse(product.id, user?.id ?? null, durationSeconds).catch(() => {
+        // 浏览日志是课程数据采集，不应影响用户浏览。
+      });
+    };
+  }, [product?.id, user?.id]);
+
   const handleAddToCart = async () => {
     if (!user) {
       alert('请先登录。');
@@ -97,6 +108,11 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
 
           <div className="flex items-baseline gap-4 mb-8">
             <span className="text-4xl font-mono font-bold text-cyan-200">¥{product.price.toFixed(2)}</span>
+            {product.category && (
+              <span className="text-sm text-violet-100 bg-violet-400/15 px-3 py-1 rounded-full border border-violet-300/30">
+                {product.category}
+              </span>
+            )}
             {product.stockQuantity != null && (
               <span className="text-sm text-slate-200 bg-white/10 px-3 py-1 rounded-full border border-white/20">
                 库存: {product.stockQuantity}

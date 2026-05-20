@@ -40,12 +40,19 @@ public class ShopBackendApplication {
 			ensureUser(userRepository, passwordEncoder, "customer02", "customer123", "customer02@example.com", UserRole.CUSTOMER);
 
 			if (productRepository.count() == 0) {
-				createProduct(productRepository, seller01, "Aurora Phone Pro", "高性能影像旗舰手机，适合演示热销电子产品。", 6999.00, 42);
-				createProduct(productRepository, seller01, "Nebula Laptop Air", "轻薄办公笔记本，适合作为高客单价商品。", 8299.00, 28);
-				createProduct(productRepository, seller01, "Pulse Wireless Earbuds", "主动降噪无线耳机，适合推荐系统展示。", 1299.00, 96);
-				createProduct(productRepository, seller02, "Orbit Smart Watch", "健康监测智能手表，适合销量趋势展示。", 1899.00, 35);
-				createProduct(productRepository, seller02, "Metro Mechanical Keyboard", "办公与游戏两用机械键盘。", 499.00, 18);
-				createProduct(productRepository, seller02, "Pocket Power Bank", "轻薄快充移动电源，低价高频消费品。", 159.00, 3);
+				createProduct(productRepository, seller01, "Aurora Phone Pro", "高性能影像旗舰手机，适合演示热销电子产品。", 6999.00, 42, "手机数码");
+				createProduct(productRepository, seller01, "Nebula Laptop Air", "轻薄办公笔记本，适合作为高客单价商品。", 8299.00, 28, "电脑办公");
+				createProduct(productRepository, seller01, "Pulse Wireless Earbuds", "主动降噪无线耳机，适合推荐系统展示。", 1299.00, 96, "智能配件");
+				createProduct(productRepository, seller02, "Orbit Smart Watch", "健康监测智能手表，适合销量趋势展示。", 1899.00, 35, "智能穿戴");
+				createProduct(productRepository, seller02, "Metro Mechanical Keyboard", "办公与游戏两用机械键盘。", 499.00, 18, "电脑办公");
+				createProduct(productRepository, seller02, "Pocket Power Bank", "轻薄快充移动电源，低价高频消费品。", 159.00, 3, "智能配件");
+			} else {
+				productRepository.findAll().forEach(product -> {
+					if (product.getCategory() == null || product.getCategory().isBlank()) {
+						product.setCategory(inferCategory(product.getName()));
+						productRepository.save(product);
+					}
+				});
 			}
 		};
 	}
@@ -66,14 +73,32 @@ public class ShopBackendApplication {
 		return userRepository.save(user);
 	}
 
-	private void createProduct(ProductRepository productRepository, User seller, String name, String description, Double price, Integer stock) {
+	private void createProduct(ProductRepository productRepository, User seller, String name, String description, Double price, Integer stock, String category) {
 		Product product = new Product();
 		product.setName(name);
 		product.setDescription(description);
 		product.setPrice(price);
+		product.setCategory(category);
 		product.setImageUrl("/100191209_p0.jpg");
 		product.setStockQuantity(stock);
 		product.setSeller(seller);
 		productRepository.save(product);
+	}
+
+	private String inferCategory(String name) {
+		if (name == null) {
+			return "未分类";
+		}
+		String lowerName = name.toLowerCase();
+		if (lowerName.contains("phone")) {
+			return "手机数码";
+		}
+		if (lowerName.contains("laptop") || lowerName.contains("keyboard")) {
+			return "电脑办公";
+		}
+		if (lowerName.contains("watch")) {
+			return "智能穿戴";
+		}
+		return "智能配件";
 	}
 }

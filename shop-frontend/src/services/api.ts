@@ -82,6 +82,17 @@ class ApiService {
     });
   }
 
+  async recordBrowse(productId: number, userId: number | null, durationSeconds: number): Promise<void> {
+    await this.request<any>('/logs/browse', {
+      method: 'POST',
+      body: JSON.stringify({
+        productId,
+        durationSeconds,
+        ...(userId ? { userId } : {}),
+      }),
+    });
+  }
+
   // --- Auth ---
   async login(username: string, password: string): Promise<User> {
     return this.request<User>('/auth/login', {
@@ -175,6 +186,22 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify({ adminId: String(adminId), password }),
     });
+  }
+
+  async getLoginLogs(adminId: number): Promise<any[]> {
+    return this.request<any[]>(`/logs/login?adminId=${adminId}`);
+  }
+
+  async getBrowseLogs(adminId: number): Promise<any[]> {
+    return this.request<any[]>(`/logs/browse?adminId=${adminId}`);
+  }
+
+  async getPurchaseLogs(adminId: number): Promise<any[]> {
+    return this.request<any[]>(`/logs/purchase?adminId=${adminId}`);
+  }
+
+  async getOperationLogs(adminId: number): Promise<any[]> {
+    return this.request<any[]>(`/logs/operation?adminId=${adminId}`);
   }
 }
 

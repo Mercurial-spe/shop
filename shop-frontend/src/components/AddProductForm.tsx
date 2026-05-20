@@ -10,6 +10,7 @@ interface AddProductFormProps {
 const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated, sellerId }) => {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
+  const [category, setCategory] = useState('手机数码');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [stockQuantity, setStockQuantity] = useState('');
@@ -27,6 +28,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated, sellerId }) 
       const newProduct = await apiService.createProduct({
         name: name.trim(),
         price: Number(price),
+        category,
         description: description.trim(),
         imageUrl: imageUrl.trim() || undefined,
         stockQuantity: stockQuantity ? Number(stockQuantity) : undefined,
@@ -35,6 +37,7 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated, sellerId }) 
       onCreated(newProduct);
       setName('');
       setPrice('');
+      setCategory('手机数码');
       setDescription('');
       setImageUrl('');
       setStockQuantity('');
@@ -84,6 +87,19 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onCreated, sellerId }) 
               onChange={(e) => setStockQuantity(e.target.value)}
               className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl focus:bg-white/10 focus:ring-2 focus:ring-cyan-200/60 focus:border-transparent outline-none transition-all text-white"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-200 mb-2">商品类别</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl focus:bg-white/10 focus:ring-2 focus:ring-cyan-200/60 focus:border-transparent outline-none transition-all text-white"
+            >
+              <option className="bg-slate-900" value="手机数码">手机数码</option>
+              <option className="bg-slate-900" value="电脑办公">电脑办公</option>
+              <option className="bg-slate-900" value="智能配件">智能配件</option>
+              <option className="bg-slate-900" value="智能穿戴">智能穿戴</option>
+            </select>
           </div>
         </div>
 

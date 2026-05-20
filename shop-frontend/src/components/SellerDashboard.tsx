@@ -94,6 +94,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
         name: product.name,
         description: product.description,
         price: updatedPrice,
+        category: product.category,
         imageUrl: product.imageUrl,
         stockQuantity: updatedStock,
       });
@@ -193,7 +194,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
               <div key={product.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-b border-white/10 pb-3">
                 <div>
                   <p className="text-white font-semibold">{product.name}</p>
-                  <p className="text-slate-400 text-sm">库存: {product.stockQuantity ?? 0}</p>
+                  <p className="text-slate-400 text-sm">类别: {product.category || '未分类'} / 库存: {product.stockQuantity ?? 0}</p>
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="text-cyan-200 font-mono font-bold">¥{product.price.toFixed(2)}</span>
