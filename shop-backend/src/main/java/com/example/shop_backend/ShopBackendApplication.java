@@ -5,6 +5,7 @@ import com.example.shop_backend.model.User;
 import com.example.shop_backend.model.UserRole;
 import com.example.shop_backend.repository.ProductRepository;
 import com.example.shop_backend.repository.UserRepository;
+import com.example.shop_backend.service.ProductCategoryService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -30,6 +31,7 @@ public class ShopBackendApplication {
 	public CommandLineRunner initData(
 			UserRepository userRepository,
 			ProductRepository productRepository,
+			ProductCategoryService categoryService,
 			PasswordEncoder passwordEncoder
 	) {
 		return args -> {
@@ -38,6 +40,8 @@ public class ShopBackendApplication {
 			User seller02 = ensureUser(userRepository, passwordEncoder, "seller02", "seller123", "seller02@example.com", UserRole.SELLER);
 			ensureUser(userRepository, passwordEncoder, "customer01", "customer123", "customer01@example.com", UserRole.CUSTOMER);
 			ensureUser(userRepository, passwordEncoder, "customer02", "customer123", "customer02@example.com", UserRole.CUSTOMER);
+
+			ensureDefaultCategories(categoryService, seller01);
 
 			if (productRepository.count() == 0) {
 				createProduct(productRepository, seller01, "Aurora Phone Pro", "高性能影像旗舰手机，适合演示热销电子产品。", 6999.00, 42, "手机数码");
@@ -55,6 +59,13 @@ public class ShopBackendApplication {
 				});
 			}
 		};
+	}
+
+	private void ensureDefaultCategories(ProductCategoryService categoryService, User creator) {
+		categoryService.ensureCategory("手机数码", creator);
+		categoryService.ensureCategory("电脑办公", creator);
+		categoryService.ensureCategory("智能配件", creator);
+		categoryService.ensureCategory("智能穿戴", creator);
 	}
 
 	private User ensureUser(

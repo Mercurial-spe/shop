@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Product } from '../types/Product';
 import { apiService } from '../services/api';
-import type { User } from '../services/api';
+import type { ProductCategory, User } from '../services/api';
 import ProductCard from './ProductCard';
 import AddProductForm from './AddProductForm';
 import FilterSidebar from './FilterSidebar';
@@ -14,6 +14,7 @@ interface ProductListProps {
 
 const ProductList: React.FC<ProductListProps> = ({ user }) => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -23,8 +24,12 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
 
   const loadProducts = async () => {
     try {
-      const data = await apiService.getProducts();
-      setProducts(data);
+      const [productData, categoryData] = await Promise.all([
+        apiService.getProducts(),
+        apiService.getCategories(),
+      ]);
+      setProducts(productData);
+      setCategories(categoryData);
     } catch (err) {
       setError('商品加载失败。');
       console.error('Error fetching products:', err);
@@ -138,7 +143,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
 
       {showAddForm && user?.role === 'SELLER' && (
         <div className="transition-all">
-          <AddProductForm onCreated={handleCreated} sellerId={user.id} />
+          <AddProductForm onCreated={handleCreated} sellerId={user.id} categories={categories} />
         </div>
       )}
 

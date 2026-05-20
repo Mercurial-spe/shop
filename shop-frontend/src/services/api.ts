@@ -21,6 +21,14 @@ export interface SellerCreateRequest {
   password: string;
 }
 
+export interface ProductCategory {
+  id: number;
+  name: string;
+  createdById?: number;
+  createdByUsername?: string;
+  createdAt: string;
+}
+
 class ApiService {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -91,6 +99,26 @@ class ApiService {
         ...(userId ? { userId } : {}),
       }),
     });
+  }
+
+  async getCategories(): Promise<ProductCategory[]> {
+    return this.request<ProductCategory[]>('/categories');
+  }
+
+  async createCategory(sellerId: number, name: string): Promise<ProductCategory> {
+    return this.request<ProductCategory>('/categories', {
+      method: 'POST',
+      body: JSON.stringify({ sellerId: String(sellerId), name }),
+    });
+  }
+
+  async deleteCategory(sellerId: number, categoryId: number): Promise<void> {
+    const url = `${API_BASE_URL}/categories/${categoryId}?sellerId=${sellerId}`;
+    const response = await fetch(url, { method: 'DELETE' });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Delete category failed');
+    }
   }
 
   // --- Auth ---

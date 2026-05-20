@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
-import type { User } from '../services/api';
+import type { ProductCategory, User } from '../services/api';
 import type { Product } from '../types/Product';
 import AddProductForm from './AddProductForm';
 
@@ -34,22 +34,27 @@ interface SellerDashboardProps {
 
 const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [orders, setOrders] = useState<SellerOrderItem[]>([]);
   const [stats, setStats] = useState<SellerStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [categoryName, setCategoryName] = useState('');
+  const [categoryMessage, setCategoryMessage] = useState('');
 
   const loadAll = async () => {
     try {
-      const [productData, orderData, statsData] = await Promise.all([
+      const [productData, orderData, statsData, categoryData] = await Promise.all([
         apiService.getProductsBySeller(user.id),
         apiService.getOrdersBySeller(user.id),
         apiService.getSellerStats(user.id),
+        apiService.getCategories(),
       ]);
       setProducts(productData);
       setOrders(orderData);
       setStats(statsData);
+      setCategories(categoryData);
     } catch (err: any) {
       setError(err.message || '加载数据失败。');
     } finally {
@@ -64,6 +69,32 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
   const handleCreated = (product: Product) => {
     setProducts((prev) => [product, ...prev]);
     setShowAddForm(false);
+  };
+
+  const handleCreateCategory = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setCategoryMessage('');
+    try {
+      const created = await apiService.createCategory(user.id, categoryName);
+      setCategories((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
+      setCategoryName('');
+      setCategoryMessage(`已添加类别 ${created.name}`);
+    } catch (err: any) {
+      setCategoryMessage(err.message || '添加类别失败。');
+    }
+  };
+
+  const handleDeleteCategory = async (category: ProductCategory) => {
+    const confirmed = window.confirm(`确认删除类别 ${category.name}？有关联商品的类别不能删除。`);
+    if (!confirmed) return;
+    setCategoryMessage('');
+    try {
+      await apiService.deleteCategory(user.id, category.id);
+      setCategories((prev) => prev.filter((item) => item.id !== category.id));
+      setCategoryMessage(`已删除类别 ${category.name}`);
+    } catch (err: any) {
+      setCategoryMessage(err.message || '删除类别失败。');
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -144,7 +175,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
       </div>
 
       {showAddForm && (
-        <AddProductForm onCreated={handleCreated} sellerId={user.id} />
+        <AddProductForm onCreated={handleCreated} sellerId={user.id} categories={categories} />
       )}
 
       {stats && (
@@ -183,6 +214,52 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
           )}
         </div>
       )}
+
+      <div className="bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur">
+        <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h3 className="text-xl font-bold text-white">商品类别管理</h3>
+            <p className="mt-1 text-sm text-slate-400">销售人员可添加/删除类别；已被商品使用的类别会被后端拒绝删除。</p>
+          </div>
+          <span className="rounded-full bg-cyan-300/15 px-3 py-1 text-xs font-bold text-cyan-100">
+            {categories.length} 个类别
+          </span>
+        </div>
+
+        <form onSubmit={handleCreateCategory} className="mb-4 flex flex-col gap-3 md:flex-row">
+          <input
+            value={categoryName}
+            onChange={(event) => setCategoryName(event.target.value)}
+            className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400 focus:border-cyan-200"
+            placeholder="例如：校园精选"
+            required
+          />
+          <button className="rounded-xl bg-cyan-300 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-cyan-200">
+            添加类别
+          </button>
+        </form>
+
+        {categoryMessage && (
+          <div className="mb-4 rounded-2xl border border-white/10 bg-slate-950/40 p-3 text-sm font-semibold text-cyan-100">
+            {categoryMessage}
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2">
+          {categories.map((category) => (
+            <div key={category.id} className="flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/40 px-3 py-2">
+              <span className="text-sm font-semibold text-slate-100">{category.name}</span>
+              <button
+                type="button"
+                onClick={() => handleDeleteCategory(category)}
+                className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-bold text-red-100 transition hover:bg-red-400/25"
+              >
+                删除
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur">
         <h3 className="text-xl font-bold text-white mb-4">商品目录</h3>
