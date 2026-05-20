@@ -21,11 +21,17 @@ public class Order {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "varchar(32)")
     private OrderStatus status;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    private String paymentMethod;
+
+    private String paymentNo;
+
+    private LocalDateTime paidAt;
 
     private LocalDateTime shippedAt;
 

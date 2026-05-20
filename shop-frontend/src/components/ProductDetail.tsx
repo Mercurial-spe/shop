@@ -74,12 +74,18 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
     }
     if (product) {
       try {
-        await apiService.purchaseProduct(product.id, user.id, quantity);
+        const order = await apiService.purchaseProduct(product.id, user.id, quantity);
+        const paymentMethod = window.prompt('请选择支付方式：模拟支付宝 / 模拟微信 / 模拟银行卡', '模拟支付宝');
+        if (!paymentMethod) {
+          alert(`订单 ${order.id} 已创建，当前状态为待支付。可在订单页继续演示。`);
+          return;
+        }
+        const paidOrder = await apiService.payOrder(order.id, user.id, paymentMethod);
         const refreshed = await apiService.getProduct(product.id);
         setProduct(refreshed);
-        alert('购买成功，订单已生成。');
-      } catch (err) {
-        alert('购买失败，请稍后再试。');
+        alert(`支付成功。订单 ${paidOrder.id} 已进入“已支付”状态。`);
+      } catch (err: any) {
+        alert(err.message || '购买失败，请稍后再试。');
       }
     }
   };

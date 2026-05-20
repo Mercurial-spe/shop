@@ -64,21 +64,12 @@ public class OrderService {
 
         Order order = new Order();
         order.setUser(user);
-        order.setStatus(OrderStatus.SHIPPED);
+        order.setStatus(OrderStatus.PENDING_PAYMENT);
         order.setCreatedAt(LocalDateTime.now());
-        order.setShippedAt(LocalDateTime.now());
 
         for (CartItem item : items) {
             Product product = item.getProduct();
-            Integer stock = product.getStockQuantity();
-            if (stock != null) {
-                int remaining = stock - item.getQuantity();
-                if (remaining < 0) {
-                    throw new RuntimeException("库存不足");
-                }
-                product.setStockQuantity(remaining);
-                productRepository.save(product);
-            }
+            ensureEnoughStock(product, item.getQuantity());
 
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
@@ -89,10 +80,7 @@ public class OrderService {
             order.getItems().add(orderItem);
         }
 
-        Order saved = orderRepository.save(order);
-        saved.getItems().forEach(item -> auditLogService.logPurchase(user, saved, item));
-        emailService.sendOrderConfirmation(saved);
-        return saved;
+        return orderRepository.save(order);
     }
 
     @Transactional
@@ -103,21 +91,12 @@ public class OrderService {
             throw new RuntimeException("商品数量必须大于 0");
         }
 
-        Integer stock = product.getStockQuantity();
-        if (stock != null) {
-            int remaining = stock - quantity;
-            if (remaining < 0) {
-                throw new RuntimeException("库存不足");
-            }
-            product.setStockQuantity(remaining);
-            productRepository.save(product);
-        }
+        ensureEnoughStock(product, quantity);
 
         Order order = new Order();
         order.setUser(user);
-        order.setStatus(OrderStatus.SHIPPED);
+        order.setStatus(OrderStatus.PENDING_PAYMENT);
         order.setCreatedAt(LocalDateTime.now());
-        order.setShippedAt(LocalDateTime.now());
 
         OrderItem orderItem = new OrderItem();
         orderItem.setOrder(order);
@@ -127,6 +106,34 @@ public class OrderService {
         orderItem.setPrice(product.getPrice());
         order.getItems().add(orderItem);
 
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public Order payOrder(Long orderId, Long userId, String paymentMethod) {
+        User user = accessControlService.requireCustomer(userId);
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("订单不存在"));
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("无权支付该订单");
+        }
+        if (order.getStatus() != OrderStatus.PENDING_PAYMENT) {
+            throw new RuntimeException("订单当前状态不能重复支付");
+        }
+
+        for (OrderItem item : order.getItems()) {
+            Product product = productRepository.findById(item.getProduct().getId())
+                    .orElseThrow(() -> new RuntimeException("商品不存在"));
+            reduceStock(product, item.getQuantity());
+            productRepository.save(product);
+            item.setProduct(product);
+        }
+
+        LocalDateTime paidAt = LocalDateTime.now();
+        order.setStatus(OrderStatus.PAID);
+        order.setPaidAt(paidAt);
+        order.setPaymentMethod(normalizePaymentMethod(paymentMethod));
+        order.setPaymentNo("SIM-" + order.getId() + "-" + paidAt.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+
         Order saved = orderRepository.save(order);
         saved.getItems().forEach(item -> auditLogService.logPurchase(user, saved, item));
         emailService.sendOrderConfirmation(saved);
@@ -135,7 +142,9 @@ public class OrderService {
 
     public Map<String, Object> getSellerStats(Long sellerId) {
         User seller = accessControlService.requireSeller(sellerId);
-        List<OrderItem> items = orderItemRepository.findBySeller(seller);
+        List<OrderItem> items = orderItemRepository.findBySeller(seller).stream()
+                .filter(item -> item.getOrder().getStatus() != OrderStatus.PENDING_PAYMENT)
+                .collect(Collectors.toList());
 
         double totalRevenue = items.stream()
                 .mapToDouble(item -> item.getPrice() * item.getQuantity())
@@ -171,5 +180,27 @@ public class OrderService {
             order.setReceivedAt(LocalDateTime.now());
             orderRepository.save(order);
         }
+    }
+
+    private void ensureEnoughStock(Product product, int quantity) {
+        Integer stock = product.getStockQuantity();
+        if (stock != null && stock - quantity < 0) {
+            throw new RuntimeException("库存不足");
+        }
+    }
+
+    private void reduceStock(Product product, int quantity) {
+        ensureEnoughStock(product, quantity);
+        Integer stock = product.getStockQuantity();
+        if (stock != null) {
+            product.setStockQuantity(stock - quantity);
+        }
+    }
+
+    private String normalizePaymentMethod(String paymentMethod) {
+        if (paymentMethod == null || paymentMethod.isBlank()) {
+            return "模拟支付";
+        }
+        return paymentMethod.trim();
     }
 }

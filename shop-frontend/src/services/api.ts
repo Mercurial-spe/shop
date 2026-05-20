@@ -90,6 +90,13 @@ class ApiService {
     });
   }
 
+  async payOrder(orderId: number, userId: number, paymentMethod: string): Promise<any> {
+    return this.request<any>(`/orders/${orderId}/pay`, {
+      method: 'POST',
+      body: JSON.stringify({ userId: String(userId), paymentMethod }),
+    });
+  }
+
   async recordBrowse(productId: number, userId: number | null, durationSeconds: number): Promise<void> {
     await this.request<any>('/logs/browse', {
       method: 'POST',
@@ -163,13 +170,10 @@ class ApiService {
     }
   }
 
-  async checkoutCart(userId: number): Promise<void> {
-    const url = `${API_BASE_URL}/cart/${userId}/checkout`;
-    const response = await fetch(url, { method: 'POST' });
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || 'Checkout failed');
-    }
+  async checkoutCart(userId: number): Promise<any> {
+    return this.request<any>(`/cart/${userId}/checkout`, {
+      method: 'POST',
+    });
   }
 
   async getOrdersByUser(userId: number): Promise<any[]> {

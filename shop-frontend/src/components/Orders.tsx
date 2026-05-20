@@ -15,14 +15,18 @@ interface OrderItem {
 
 interface Order {
   id: number;
-  status: 'SHIPPED' | 'RECEIVED';
+  status: 'PENDING_PAYMENT' | 'PAID' | 'SHIPPED' | 'RECEIVED';
   createdAt: string;
+  paymentMethod?: string;
+  paidAt?: string;
   shippedAt?: string;
   receivedAt?: string;
   items: OrderItem[];
 }
 
 const statusMap: Record<Order['status'], string> = {
+  PENDING_PAYMENT: '待支付',
+  PAID: '已支付',
   SHIPPED: '已发货',
   RECEIVED: '已签收',
 };
@@ -49,6 +53,18 @@ const Orders: React.FC<OrdersProps> = ({ user }) => {
     };
     loadOrders();
   }, [user.id]);
+
+  const handlePay = async (order: Order) => {
+    const paymentMethod = window.prompt('请选择支付方式：模拟支付宝 / 模拟微信 / 模拟银行卡', order.paymentMethod || '模拟支付宝');
+    if (!paymentMethod) return;
+    try {
+      const paidOrder = await apiService.payOrder(order.id, user.id, paymentMethod);
+      setOrders((prev) => prev.map((item) => (item.id === paidOrder.id ? paidOrder : item)));
+      alert(`支付成功。订单 ${paidOrder.id} 已进入“已支付”状态。`);
+    } catch (err: any) {
+      alert(err.message || '支付失败，请稍后再试。');
+    }
+  };
 
   if (loading) {
     return (
@@ -94,6 +110,14 @@ const Orders: React.FC<OrdersProps> = ({ user }) => {
                 <span className="px-4 py-2 rounded-full bg-cyan-500/80 text-white font-bold shadow-[0_0_15px_rgba(6,182,212,0.5)]">
                   {statusMap[order.status]}
                 </span>
+                {order.status === 'PENDING_PAYMENT' && (
+                  <button
+                    onClick={() => handlePay(order)}
+                    className="px-4 py-2 rounded-full bg-cyan-300 text-slate-950 font-bold hover:bg-cyan-200 transition-all"
+                  >
+                    去支付
+                  </button>
+                )}
                 <Link
                   to={`/orders/${order.id}`}
                   className="px-4 py-2 rounded-full border border-white/20 text-slate-200 hover:text-white hover:border-cyan-200 transition-all"

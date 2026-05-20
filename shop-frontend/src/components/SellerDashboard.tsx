@@ -6,7 +6,7 @@ import AddProductForm from './AddProductForm';
 
 interface SellerOrderItem {
   orderId: number;
-  orderStatus: 'SHIPPED' | 'RECEIVED';
+  orderStatus: 'PENDING_PAYMENT' | 'PAID' | 'SHIPPED' | 'RECEIVED';
   orderCreatedAt: string;
   productId: number;
   productName: string;
@@ -23,7 +23,9 @@ interface SellerStats {
   productSales: Record<string, number>;
 }
 
-const statusMap: Record<'SHIPPED' | 'RECEIVED', string> = {
+const statusMap: Record<SellerOrderItem['orderStatus'], string> = {
+  PENDING_PAYMENT: '待支付',
+  PAID: '已支付',
   SHIPPED: '已发货',
   RECEIVED: '已签收',
 };

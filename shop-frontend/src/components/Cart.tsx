@@ -141,11 +141,17 @@ const Cart: React.FC<CartProps> = ({ user }) => {
                 className="w-full py-4 bg-cyan-300 hover:bg-cyan-200 text-slate-900 text-lg font-bold rounded-2xl shadow-lg shadow-cyan-200/30 transition-all transform active:scale-95"
                 onClick={async () => {
                   try {
-                    await apiService.checkoutCart(user.id);
+                    const order = await apiService.checkoutCart(user.id);
                     setItems([]);
-                    alert('订单已提交。');
-                  } catch (err) {
-                    alert('结算失败，请检查库存后重试。');
+                    const paymentMethod = window.prompt('请选择支付方式：模拟支付宝 / 模拟微信 / 模拟银行卡', '模拟支付宝');
+                    if (!paymentMethod) {
+                      alert(`订单 ${order.id} 已创建，当前状态为待支付。`);
+                      return;
+                    }
+                    const paidOrder = await apiService.payOrder(order.id, user.id, paymentMethod);
+                    alert(`支付成功。订单 ${paidOrder.id} 已进入“已支付”状态。`);
+                  } catch (err: any) {
+                    alert(err.message || '结算失败，请检查库存后重试。');
                   }
                 }}
               >

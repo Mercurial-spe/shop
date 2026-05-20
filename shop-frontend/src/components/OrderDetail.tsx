@@ -12,14 +12,19 @@ interface OrderItem {
 
 interface OrderDetailData {
   id: number;
-  status: 'SHIPPED' | 'RECEIVED';
+  status: 'PENDING_PAYMENT' | 'PAID' | 'SHIPPED' | 'RECEIVED';
   createdAt: string;
+  paymentMethod?: string;
+  paymentNo?: string;
+  paidAt?: string;
   shippedAt?: string;
   receivedAt?: string;
   items: OrderItem[];
 }
 
 const statusMap: Record<OrderDetailData['status'], string> = {
+  PENDING_PAYMENT: '待支付',
+  PAID: '已支付',
   SHIPPED: '已发货',
   RECEIVED: '已签收',
 };
@@ -48,6 +53,19 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ user }) => {
     };
     loadDetail();
   }, [id, user.id]);
+
+  const handlePay = async () => {
+    if (!order) return;
+    const paymentMethod = window.prompt('请选择支付方式：模拟支付宝 / 模拟微信 / 模拟银行卡', order.paymentMethod || '模拟支付宝');
+    if (!paymentMethod) return;
+    try {
+      const paidOrder = await apiService.payOrder(order.id, user.id, paymentMethod);
+      setOrder(paidOrder);
+      alert(`支付成功。订单 ${paidOrder.id} 已进入“已支付”状态。`);
+    } catch (err: any) {
+      alert(err.message || '支付失败，请稍后再试。');
+    }
+  };
 
   if (loading) {
     return (
@@ -80,13 +98,26 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ user }) => {
           <h2 className="text-3xl font-bold text-white">订单详情</h2>
           <p className="text-slate-300">订单号: {order.id}</p>
         </div>
-        <span className="px-4 py-2 rounded-full bg-cyan-500/80 text-white font-bold shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-          {statusMap[order.status]}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="px-4 py-2 rounded-full bg-cyan-500/80 text-white font-bold shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+            {statusMap[order.status]}
+          </span>
+          {order.status === 'PENDING_PAYMENT' && (
+            <button
+              onClick={handlePay}
+              className="px-4 py-2 rounded-full bg-cyan-300 text-slate-950 font-bold hover:bg-cyan-200 transition-all"
+            >
+              去支付
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur space-y-2 text-slate-300">
         <div>下单时间: {new Date(order.createdAt).toLocaleString()}</div>
+        {order.paymentMethod && <div>支付方式: {order.paymentMethod}</div>}
+        {order.paymentNo && <div>支付流水: {order.paymentNo}</div>}
+        {order.paidAt && <div>支付时间: {new Date(order.paidAt).toLocaleString()}</div>}
         {order.shippedAt && <div>发货时间: {new Date(order.shippedAt).toLocaleString()}</div>}
         {order.receivedAt && <div>签收时间: {new Date(order.receivedAt).toLocaleString()}</div>}
       </div>

@@ -39,6 +39,25 @@ public class OrderController {
         }
     }
 
+    @PostMapping("/{orderId}/pay")
+    public ResponseEntity<?> payOrder(@PathVariable Long orderId, @RequestBody Map<String, Object> payload) {
+        try {
+            Object userIdValue = payload.get("userId");
+            String userIdText = userIdValue == null ? null : userIdValue.toString();
+            if (userIdText == null || userIdText.isBlank()) {
+                return ResponseEntity.badRequest().body("用户不存在");
+            }
+            Object paymentMethodValue = payload.getOrDefault("paymentMethod", "模拟支付");
+            String paymentMethod = paymentMethodValue == null ? "模拟支付" : paymentMethodValue.toString();
+            Order order = orderService.payOrder(orderId, Long.parseLong(userIdText), paymentMethod);
+            return ResponseEntity.ok(order);
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body("用户不存在");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/seller/{sellerId}")
     public ResponseEntity<?> getOrdersBySeller(@PathVariable Long sellerId) {
         try {

@@ -1,6 +1,7 @@
 package com.example.shop_backend.service;
 
 import com.example.shop_backend.model.CartItem;
+import com.example.shop_backend.model.Order;
 import com.example.shop_backend.model.Product;
 import com.example.shop_backend.model.User;
 import com.example.shop_backend.repository.CartItemRepository;
@@ -74,13 +75,14 @@ public class CartService {
     }
 
     @Transactional
-    public void checkout(Long userId) {
+    public Order checkout(Long userId) {
         User user = accessControlService.requireCustomer(userId);
         List<CartItem> items = cartItemRepository.findByUser(user);
         if (items.isEmpty()) {
             throw new RuntimeException("购物车为空");
         }
-        orderService.checkout(userId, items);
+        Order order = orderService.checkout(userId, items);
         cartItemRepository.deleteByUser(user);
+        return order;
     }
 }
