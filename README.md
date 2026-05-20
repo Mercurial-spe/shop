@@ -71,8 +71,43 @@ SMTP_PASS=你的授权码
 
 > 默认使用 MySQL 容器；邮箱配置通过环境变量注入。
 
-## 本地开发（可选）
-- 后端：`shop-backend`（Spring Boot）
-- 前端：`shop-frontend`（Vite + React）
+## 本地开发（WSL）
+首次准备环境：
 
-需要 Node.js 18+ / Java 21+ / MySQL 8+
+```bash
+./scripts/install-wsl-tools.sh
+./scripts/setup-local-mysql.sh
+./scripts/check-dev-env.sh --build
+```
+
+本地 MySQL 默认配置：
+
+| 项目 | 值 |
+| --- | --- |
+| 地址 | `127.0.0.1` |
+| 端口 | `3307` |
+| 数据库 | `shop_db` |
+| 用户 | `shop_user` |
+| 密码 | `shop_pass` |
+
+后端默认连接：
+
+```text
+jdbc:mysql://localhost:3307/shop_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+```
+
+启动后端：
+
+```bash
+cd shop-backend
+./mvnw spring-boot:run
+```
+
+启动前端：
+
+```bash
+cd shop-frontend
+npm run dev
+```
+
+需要 Node.js 20+ / Java 21+ / MySQL 8+。Spring Boot 和前后端依赖由 Maven / npm 根据项目配置自动下载。

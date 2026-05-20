@@ -55,3 +55,15 @@ pnpm-debug.log*
 .env.production.local
 shop-backend/src/main/resources/application-local.properties
 nginx.conf.md
+
+# Private local planning notes for this coursework project.
+AGENTS.local.md
+docs/private/
+
+# Local agent/skill runtime metadata.
+.agents/
+.codex/
+**/.agents/
+**/.codex/
+skills-lock.json
+**/skills-lock.json

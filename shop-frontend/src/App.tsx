@@ -8,6 +8,7 @@ import ProductDetail from './components/ProductDetail';
 import Orders from './components/Orders';
 import OrderDetail from './components/OrderDetail';
 import SellerDashboard from './components/SellerDashboard';
+import AdminDashboard from './components/AdminDashboard';
 import Navbar from './components/Navbar';
 import InteractiveBackground from './components/InteractiveBackground';
 import CustomCursor from './components/CustomCursor';
@@ -67,6 +68,8 @@ function AppContent() {
     setUser(null);
     localStorage.removeItem('user');
   };
+
+  const defaultPath = user?.role === 'ADMIN' ? '/admin' : user?.role === 'SELLER' ? '/seller' : user ? '/products' : '/login';
 
   return (
     <Routes>
@@ -143,7 +146,16 @@ function AppContent() {
           }
         />
 
-        <Route path="/" element={<Navigate to={user ? '/products' : '/login'} />} />
+        <Route
+          path="/admin"
+          element={
+            <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full">
+              {user?.role === 'ADMIN' ? <AdminDashboard user={user} /> : <Navigate to="/products" />}
+            </div>
+          }
+        />
+
+        <Route path="/" element={<Navigate to={defaultPath} />} />
       </Route>
     </Routes>
   );

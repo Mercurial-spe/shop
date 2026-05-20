@@ -5,7 +5,7 @@ const API_BASE_URL = '/api';
 export interface User {
   id: number;
   username: string;
-  role: 'CUSTOMER' | 'SELLER';
+  role: 'CUSTOMER' | 'SELLER' | 'ADMIN';
   email?: string;
 }
 

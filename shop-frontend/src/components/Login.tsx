@@ -22,7 +22,13 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     try {
       const user = await apiService.login(username, password);
       onLoginSuccess(user);
-      navigate('/products');
+      if (user.role === 'ADMIN') {
+        navigate('/admin');
+      } else if (user.role === 'SELLER') {
+        navigate('/seller');
+      } else {
+        navigate('/products');
+      }
     } catch (err: any) {
       setError(err.message || '登录失败，请检查账号和密码。');
     } finally {
@@ -119,21 +125,30 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         
         <div className="grid grid-cols-2 gap-4 relative z-10">
           <button
-            onClick={() => fillTestAccount('admin', '123456')}
+            onClick={() => fillTestAccount('admin', 'admin123')}
             className="flex flex-col items-start p-4 bg-white hover:bg-primary-50 rounded-2xl border border-white hover:border-primary-200 shadow-sm hover:shadow-md transition-all group/btn text-left"
           >
-            <span className="text-[10px] font-bold text-primary-400 uppercase tracking-tighter mb-1">卖家账户 (Seller)</span>
+            <span className="text-[10px] font-bold text-primary-400 uppercase tracking-tighter mb-1">管理员 (Admin)</span>
             <span className="text-lg font-bold font-starborn text-slate-700 group-hover/btn:text-primary-600">admin</span>
-            <span className="text-xs font-mono text-slate-400 mt-1">密码: 123456</span>
+            <span className="text-xs font-mono text-slate-400 mt-1">密码: admin123</span>
           </button>
 
           <button
-            onClick={() => fillTestAccount('buyer', '123456')}
+            onClick={() => fillTestAccount('seller01', 'seller123')}
             className="flex flex-col items-start p-4 bg-white hover:bg-primary-50 rounded-2xl border border-white hover:border-primary-200 shadow-sm hover:shadow-md transition-all group/btn text-left"
           >
-            <span className="text-[10px] font-bold text-primary-400 uppercase tracking-tighter mb-1">买家账户 (Buyer)</span>
-            <span className="text-lg font-bold font-starborn text-slate-700 group-hover/btn:text-primary-600">buyer</span>
-            <span className="text-xs font-mono text-slate-400 mt-1">密码: 123456</span>
+            <span className="text-[10px] font-bold text-primary-400 uppercase tracking-tighter mb-1">销售人员 (Sales)</span>
+            <span className="text-lg font-bold font-starborn text-slate-700 group-hover/btn:text-primary-600">seller01</span>
+            <span className="text-xs font-mono text-slate-400 mt-1">密码: seller123</span>
+          </button>
+
+          <button
+            onClick={() => fillTestAccount('customer01', 'customer123')}
+            className="flex flex-col items-start p-4 bg-white hover:bg-primary-50 rounded-2xl border border-white hover:border-primary-200 shadow-sm hover:shadow-md transition-all group/btn text-left"
+          >
+            <span className="text-[10px] font-bold text-primary-400 uppercase tracking-tighter mb-1">顾客 (Customer)</span>
+            <span className="text-lg font-bold font-starborn text-slate-700 group-hover/btn:text-primary-600">customer01</span>
+            <span className="text-xs font-mono text-slate-400 mt-1">密码: customer123</span>
           </button>
         </div>
         

@@ -2,6 +2,7 @@ package com.example.shop_backend.service;
 
 import com.example.shop_backend.model.Product;
 import com.example.shop_backend.model.User;
+import com.example.shop_backend.model.UserRole;
 import com.example.shop_backend.repository.ProductRepository;
 import com.example.shop_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ public class ProductService {
     public List<Product> getProductsBySeller(Long sellerId) {
         User seller = userRepository.findById(sellerId)
                 .orElseThrow(() -> new RuntimeException("卖家不存在"));
-        if (seller.getRole() != com.example.shop_backend.model.UserRole.SELLER) {
+        if (seller.getRole() != UserRole.SELLER) {
             throw new RuntimeException("该账号不是销售管理");
         }
         return productRepository.findBySeller(seller);
@@ -40,6 +41,9 @@ public class ProductService {
     public Product createProduct(Product product, Long sellerId) {
         User seller = userRepository.findById(sellerId)
                 .orElseThrow(() -> new RuntimeException("卖家不存在"));
+        if (seller.getRole() != UserRole.SELLER) {
+            throw new RuntimeException("只有销售人员可以发布商品");
+        }
         product.setSeller(seller);
         return productRepository.save(product);
     }
