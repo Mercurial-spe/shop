@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { apiService } from '../services/api';
 import type { User } from '../services/api';
+import PaymentDialog from './PaymentDialog';
 
 interface OrderItem {
   id: number;
@@ -38,6 +39,8 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ user }) => {
   const [order, setOrder] = useState<OrderDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   useEffect(() => {
     const loadDetail = async () => {
@@ -54,16 +57,18 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ user }) => {
     loadDetail();
   }, [id, user.id]);
 
-  const handlePay = async () => {
+  const handlePay = async (paymentMethod: string) => {
     if (!order) return;
-    const paymentMethod = window.prompt('请选择支付方式：模拟支付宝 / 模拟微信 / 模拟银行卡', order.paymentMethod || '模拟支付宝');
-    if (!paymentMethod) return;
+    setPaymentLoading(true);
     try {
       const paidOrder = await apiService.payOrder(order.id, user.id, paymentMethod);
       setOrder(paidOrder);
+      setShowPayment(false);
       alert(`支付成功。订单 ${paidOrder.id} 已进入“已支付”状态。`);
     } catch (err: any) {
       alert(err.message || '支付失败，请稍后再试。');
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
@@ -104,7 +109,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ user }) => {
           </span>
           {order.status === 'PENDING_PAYMENT' && (
             <button
-              onClick={handlePay}
+              onClick={() => setShowPayment(true)}
               className="px-4 py-2 rounded-full bg-cyan-300 text-slate-950 font-bold hover:bg-cyan-200 transition-all"
             >
               去支付
@@ -141,6 +146,17 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ user }) => {
       <Link to="/orders" className="text-cyan-200 hover:text-cyan-100">
         返回订单列表
       </Link>
+
+      {showPayment && (
+        <PaymentDialog
+          open={showPayment}
+          orderId={order.id}
+          amount={totalPrice}
+          loading={paymentLoading}
+          onCancel={() => setShowPayment(false)}
+          onConfirm={handlePay}
+        />
+      )}
     </div>
   );
 };

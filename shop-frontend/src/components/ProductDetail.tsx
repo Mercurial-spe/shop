@@ -4,6 +4,7 @@ import { apiService } from '../services/api';
 import type { RecommendationProduct, User } from '../services/api';
 import type { Product } from '../types/Product';
 import RecommendationSection from './RecommendationSection';
+import PaymentDialog from './PaymentDialog';
 
 interface ProductDetailProps {
   user: User | null;
@@ -17,6 +18,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
   const [relatedProducts, setRelatedProducts] = useState<RecommendationProduct[]>([]);
   const [relatedLoading, setRelatedLoading] = useState(false);
   const [relatedError, setRelatedError] = useState<string | null>(null);
+  const [pendingPayment, setPendingPayment] = useState<{ orderId: number; amount: number } | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -126,18 +129,26 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
     if (product) {
       try {
         const order = await apiService.purchaseProduct(product.id, user.id, quantity);
-        const paymentMethod = window.prompt('请选择支付方式：模拟支付宝 / 模拟微信 / 模拟银行卡', '模拟支付宝');
-        if (!paymentMethod) {
-          alert(`订单 ${order.id} 已创建，当前状态为待支付。可在订单页继续演示。`);
-          return;
-        }
-        const paidOrder = await apiService.payOrder(order.id, user.id, paymentMethod);
-        const refreshed = await apiService.getProduct(product.id);
-        setProduct(refreshed);
-        alert(`支付成功。订单 ${paidOrder.id} 已进入“已支付”状态。`);
+        setPendingPayment({ orderId: order.id, amount: product.price * quantity });
       } catch (err: any) {
         alert(err.message || '购买失败，请稍后再试。');
       }
+    }
+  };
+
+  const handleConfirmPayment = async (paymentMethod: string) => {
+    if (!user || !product || !pendingPayment) return;
+    setPaymentLoading(true);
+    try {
+      const paidOrder = await apiService.payOrder(pendingPayment.orderId, user.id, paymentMethod);
+      const refreshed = await apiService.getProduct(product.id);
+      setProduct(refreshed);
+      setPendingPayment(null);
+      alert(`支付成功。订单 ${paidOrder.id} 已进入“已支付”状态。`);
+    } catch (err: any) {
+      alert(err.message || '支付失败，请稍后再试。');
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
@@ -227,6 +238,21 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
         onAddToCart={user?.role === 'CUSTOMER' ? handleAddRecommendedToCart : undefined}
         emptyText="暂无可展示的相关商品。"
       />
+
+      {pendingPayment && (
+        <PaymentDialog
+          open={Boolean(pendingPayment)}
+          orderId={pendingPayment.orderId}
+          amount={pendingPayment.amount}
+          loading={paymentLoading}
+          onCancel={() => {
+            const orderId = pendingPayment.orderId;
+            setPendingPayment(null);
+            alert(`订单 ${orderId} 已创建，当前状态为待支付。可在订单页继续演示。`);
+          }}
+          onConfirm={handleConfirmPayment}
+        />
+      )}
     </div>
   );
 };

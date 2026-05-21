@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import type { CartItem, User } from '../services/api';
+import PaymentDialog from './PaymentDialog';
 
 interface CartProps {
   user: User;
@@ -10,6 +11,8 @@ interface CartProps {
 const Cart: React.FC<CartProps> = ({ user }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pendingPayment, setPendingPayment] = useState<{ orderId: number; amount: number } | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const fetchCart = async () => {
     try {
@@ -47,6 +50,30 @@ const Cart: React.FC<CartProps> = ({ user }) => {
   };
 
   const totalPrice = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+
+  const handleCheckout = async () => {
+    try {
+      const order = await apiService.checkoutCart(user.id);
+      setPendingPayment({ orderId: order.id, amount: totalPrice });
+      setItems([]);
+    } catch (err: any) {
+      alert(err.message || '结算失败，请检查库存后重试。');
+    }
+  };
+
+  const handleConfirmPayment = async (paymentMethod: string) => {
+    if (!pendingPayment) return;
+    setPaymentLoading(true);
+    try {
+      const paidOrder = await apiService.payOrder(pendingPayment.orderId, user.id, paymentMethod);
+      setPendingPayment(null);
+      alert(`支付成功。订单 ${paidOrder.id} 已进入“已支付”状态。`);
+    } catch (err: any) {
+      alert(err.message || '支付失败，请稍后再试。');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20 space-y-4 text-slate-300">
@@ -139,27 +166,27 @@ const Cart: React.FC<CartProps> = ({ user }) => {
               </div>
               <button
                 className="w-full py-4 bg-cyan-300 hover:bg-cyan-200 text-slate-900 text-lg font-bold rounded-2xl shadow-lg shadow-cyan-200/30 transition-all transform active:scale-95"
-                onClick={async () => {
-                  try {
-                    const order = await apiService.checkoutCart(user.id);
-                    setItems([]);
-                    const paymentMethod = window.prompt('请选择支付方式：模拟支付宝 / 模拟微信 / 模拟银行卡', '模拟支付宝');
-                    if (!paymentMethod) {
-                      alert(`订单 ${order.id} 已创建，当前状态为待支付。`);
-                      return;
-                    }
-                    const paidOrder = await apiService.payOrder(order.id, user.id, paymentMethod);
-                    alert(`支付成功。订单 ${paidOrder.id} 已进入“已支付”状态。`);
-                  } catch (err: any) {
-                    alert(err.message || '结算失败，请检查库存后重试。');
-                  }
-                }}
+                onClick={handleCheckout}
               >
                 去结算
               </button>
             </div>
           </div>
         </div>
+      )}
+      {pendingPayment && (
+        <PaymentDialog
+          open={Boolean(pendingPayment)}
+          orderId={pendingPayment.orderId}
+          amount={pendingPayment.amount}
+          loading={paymentLoading}
+          onCancel={() => {
+            const orderId = pendingPayment.orderId;
+            setPendingPayment(null);
+            alert(`订单 ${orderId} 已创建，当前状态为待支付。`);
+          }}
+          onConfirm={handleConfirmPayment}
+        />
       )}
     </div>
   );

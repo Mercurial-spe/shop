@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import type { User } from '../services/api';
+import PaymentDialog from './PaymentDialog';
 
 interface OrderItem {
   id: number;
@@ -39,6 +40,8 @@ const Orders: React.FC<OrdersProps> = ({ user }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [payingOrder, setPayingOrder] = useState<Order | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -54,15 +57,18 @@ const Orders: React.FC<OrdersProps> = ({ user }) => {
     loadOrders();
   }, [user.id]);
 
-  const handlePay = async (order: Order) => {
-    const paymentMethod = window.prompt('请选择支付方式：模拟支付宝 / 模拟微信 / 模拟银行卡', order.paymentMethod || '模拟支付宝');
-    if (!paymentMethod) return;
+  const handlePay = async (paymentMethod: string) => {
+    if (!payingOrder) return;
+    setPaymentLoading(true);
     try {
-      const paidOrder = await apiService.payOrder(order.id, user.id, paymentMethod);
+      const paidOrder = await apiService.payOrder(payingOrder.id, user.id, paymentMethod);
       setOrders((prev) => prev.map((item) => (item.id === paidOrder.id ? paidOrder : item)));
+      setPayingOrder(null);
       alert(`支付成功。订单 ${paidOrder.id} 已进入“已支付”状态。`);
     } catch (err: any) {
       alert(err.message || '支付失败，请稍后再试。');
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
@@ -112,7 +118,7 @@ const Orders: React.FC<OrdersProps> = ({ user }) => {
                 </span>
                 {order.status === 'PENDING_PAYMENT' && (
                   <button
-                    onClick={() => handlePay(order)}
+                    onClick={() => setPayingOrder(order)}
                     className="px-4 py-2 rounded-full bg-cyan-300 text-slate-950 font-bold hover:bg-cyan-200 transition-all"
                   >
                     去支付
@@ -138,6 +144,16 @@ const Orders: React.FC<OrdersProps> = ({ user }) => {
           </div>
         ))}
       </div>
+      {payingOrder && (
+        <PaymentDialog
+          open={Boolean(payingOrder)}
+          orderId={payingOrder.id}
+          amount={payingOrder.items.reduce((sum, item) => sum + item.price * item.quantity, 0)}
+          loading={paymentLoading}
+          onCancel={() => setPayingOrder(null)}
+          onConfirm={handlePay}
+        />
+      )}
     </div>
   );
 };
