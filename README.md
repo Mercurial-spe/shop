@@ -7,6 +7,8 @@
 
 一个偏“未来感”的电商演示项目，包含顾客侧与销售管理侧的完整闭环。
 
+线上演示地址：<https://www.mercuria1.top/>
+
 ## 亮点
 - SMTP 订单邮件通知（下单后自动发送确认邮件）
 - 顾客 / 销售管理 双角色体系（权限与页面入口差异化）
@@ -117,4 +119,5 @@ npm run dev
 推荐的线上验收路径是 Ubuntu + MySQL + Spring Boot Jar + React build + Nginx。详细步骤见：
 
 - [docs/部署说明.md](docs/部署说明.md)
+- [docs/线上验收说明.md](docs/线上验收说明.md)
 - [deploy/nginx/mercurial-shop.conf](deploy/nginx/mercurial-shop.conf)
