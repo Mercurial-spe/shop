@@ -175,6 +175,49 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
   const topProducts = stats
     ? Object.entries(stats.productSales || {}).sort((a, b) => b[1] - a[1]).slice(0, 5)
     : [];
+  const orderSummaries = Array.from(
+    orders.reduce((map, item) => {
+      const existing = map.get(item.orderId);
+      const amount = item.price * item.quantity;
+      if (existing) {
+        existing.totalAmount += amount;
+        existing.itemCount += item.quantity;
+        existing.productNames.add(item.productName);
+        return map;
+      }
+
+      map.set(item.orderId, {
+        orderId: item.orderId,
+        orderStatus: item.orderStatus,
+        orderCreatedAt: item.orderCreatedAt,
+        buyerName: item.buyerName,
+        totalAmount: amount,
+        itemCount: item.quantity,
+        productNames: new Set([item.productName]),
+      });
+      return map;
+    }, new Map<number, {
+      orderId: number;
+      orderStatus: SellerOrderItem['orderStatus'];
+      orderCreatedAt: string;
+      buyerName: string;
+      totalAmount: number;
+      itemCount: number;
+      productNames: Set<string>;
+    }>())
+      .values()
+  ).sort((a, b) => new Date(b.orderCreatedAt).getTime() - new Date(a.orderCreatedAt).getTime());
+  const statusCounts = orderSummaries.reduce<Record<SellerOrderItem['orderStatus'], number>>((acc, order) => {
+    acc[order.orderStatus] += 1;
+    return acc;
+  }, { PENDING_PAYMENT: 0, PAID: 0, SHIPPED: 0, RECEIVED: 0 });
+  const lowStockProducts = products
+    .filter((product) => (product.stockQuantity ?? 0) > 0 && (product.stockQuantity ?? 0) <= 5)
+    .sort((a, b) => (a.stockQuantity ?? 0) - (b.stockQuantity ?? 0));
+  const outOfStockProducts = products.filter((product) => (product.stockQuantity ?? 0) <= 0);
+  const totalInventory = products.reduce((sum, product) => sum + (product.stockQuantity ?? 0), 0);
+  const paidOrderCount = statusCounts.PAID + statusCounts.SHIPPED + statusCounts.RECEIVED;
+  const paidRate = orderSummaries.length === 0 ? 0 : (paidOrderCount / orderSummaries.length) * 100;
 
   return (
     <div className="space-y-10">
@@ -211,7 +254,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
       )}
 
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           <div className="bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur">
             <p className="text-sm text-slate-400">总销售额</p>
             <p className="text-3xl font-mono font-bold text-cyan-200">¥{stats.totalRevenue.toFixed(2)}</p>
@@ -224,28 +267,122 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
             <p className="text-sm text-slate-400">售出件数</p>
             <p className="text-3xl font-bold text-white">{stats.totalUnits}</p>
           </div>
+          <div className="bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur">
+            <p className="text-sm text-slate-400">支付转化</p>
+            <p className="text-3xl font-bold text-white">{paidRate.toFixed(1)}%</p>
+            <p className="mt-1 text-xs text-slate-400">按销售相关订单估算</p>
+          </div>
         </div>
       )}
 
-      {stats && (
+      <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-6">
         <div className="bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur">
-          <h3 className="text-xl font-bold text-white mb-4">热卖商品排行</h3>
-          {topProducts.length === 0 ? (
-            <p className="text-slate-300">暂无销量数据。</p>
+          <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h3 className="text-xl font-bold text-white">库存预警</h3>
+              <p className="mt-1 text-sm text-slate-400">低库存和缺货商品会优先显示，便于截图说明异常监控。</p>
+            </div>
+            <div className="flex gap-2 text-xs font-bold">
+              <span className="rounded-full bg-cyan-300/15 px-3 py-1 text-cyan-100">总库存 {totalInventory}</span>
+              <span className="rounded-full bg-orange-400/15 px-3 py-1 text-orange-100">风险 {lowStockProducts.length + outOfStockProducts.length}</span>
+            </div>
+          </div>
+
+          {lowStockProducts.length === 0 && outOfStockProducts.length === 0 ? (
+            <div className="rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-4 text-sm font-semibold text-emerald-100">
+              当前没有低库存或缺货商品。
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {[...outOfStockProducts, ...lowStockProducts].slice(0, 6).map((product) => {
+                const stock = product.stockQuantity ?? 0;
+                const empty = stock <= 0;
+                return (
+                  <div key={product.id} className={`rounded-2xl border p-4 ${empty ? 'border-red-300/25 bg-red-400/10' : 'border-orange-300/25 bg-orange-400/10'}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-bold text-white">{product.name}</p>
+                        <p className="mt-1 text-xs text-slate-300">类别: {product.category || '未分类'}</p>
+                      </div>
+                      <span className={`rounded-full px-3 py-1 text-xs font-black ${empty ? 'bg-red-300 text-red-950' : 'bg-orange-300 text-orange-950'}`}>
+                        {empty ? '缺货' : `剩余 ${stock}`}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur">
+          <h3 className="text-xl font-bold text-white mb-5">订单状态监控</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {(Object.keys(statusMap) as SellerOrderItem['orderStatus'][]).map((status) => (
+              <div key={status} className="rounded-2xl border border-white/10 bg-slate-950/35 p-4">
+                <p className="text-xs font-bold text-slate-400">{statusMap[status]}</p>
+                <p className="mt-2 text-3xl font-black text-white">{statusCounts[status]}</p>
+              </div>
+            ))}
+          </div>
+          {statusCounts.PENDING_PAYMENT > 0 && (
+            <div className="mt-4 rounded-2xl border border-amber-300/25 bg-amber-400/10 p-4 text-sm font-semibold text-amber-100">
+              有 {statusCounts.PENDING_PAYMENT} 个待支付订单，销售额统计暂不计入。
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {stats && (
+          <div className="bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur">
+            <h3 className="text-xl font-bold text-white mb-4">热卖商品排行</h3>
+            {topProducts.length === 0 ? (
+              <p className="text-slate-300">暂无销量数据。</p>
+            ) : (
+              <div className="space-y-3">
+                {topProducts.map(([name, quantity], index) => (
+                  <div key={name} className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div className="text-white font-semibold">
+                      {index + 1}. {name}
+                    </div>
+                    <div className="text-cyan-200 font-mono font-bold">销量 {quantity}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur">
+          <h3 className="text-xl font-bold text-white mb-4">近期订单动态</h3>
+          {orderSummaries.length === 0 ? (
+            <p className="text-slate-300">暂无订单。</p>
           ) : (
             <div className="space-y-3">
-              {topProducts.map(([name, quantity], index) => (
-                <div key={name} className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <div className="text-white font-semibold">
-                    {index + 1}. {name}
+              {orderSummaries.slice(0, 5).map((order) => (
+                <div key={order.orderId} className="rounded-2xl border border-white/10 bg-slate-950/35 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-bold text-white">订单 {order.orderId} / {order.buyerName}</p>
+                      <p className="mt-1 truncate text-sm text-slate-300">
+                        {Array.from(order.productNames).join('、')}
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-cyan-500/80 px-3 py-1 text-xs font-bold text-white">
+                      {statusMap[order.orderStatus]}
+                    </span>
                   </div>
-                  <div className="text-cyan-200 font-mono font-bold">销量 {quantity}</div>
+                  <div className="mt-3 flex items-center justify-between text-sm">
+                    <span className="text-slate-400">{new Date(order.orderCreatedAt).toLocaleString()}</span>
+                    <span className="font-mono font-bold text-cyan-200">¥{order.totalAmount.toFixed(2)}</span>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
-      )}
+      </div>
 
       <div className="bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur">
         <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
