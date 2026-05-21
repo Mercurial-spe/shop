@@ -129,3 +129,4 @@ npm run dev
 - [系统实现报告](docs/reports/系统实现报告.md)
 - [测试报告](docs/reports/测试报告.md)
 - [AI 工具使用记录](docs/reports/AI工具使用记录.md)
+- [截图与测试用例清单](docs/截图与测试用例清单.md)
