@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
 import type { User } from '../services/api';
 import type { Product } from '../types/Product';
+import PasswordResetDialog from './PasswordResetDialog';
 
 interface AdminDashboardProps {
   user: User;
@@ -89,6 +90,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [error, setError] = useState('');
   const [sellerMessage, setSellerMessage] = useState('');
   const [demoResetMessage, setDemoResetMessage] = useState('');
+  const [resetSeller, setResetSeller] = useState<User | null>(null);
+  const [resettingPassword, setResettingPassword] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -151,14 +154,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     }
   };
 
-  const handleResetPassword = async (seller: User) => {
-    const password = window.prompt(`请输入 ${seller.username} 的新密码`, 'seller123');
-    if (!password) return;
+  const handleResetPassword = async (password: string) => {
+    if (!resetSeller) return;
+    setResettingPassword(true);
     try {
-      await apiService.resetSellerPassword(user.id, seller.id, password);
-      setSellerMessage(`已重置 ${seller.username} 的密码`);
+      await apiService.resetSellerPassword(user.id, resetSeller.id, password);
+      setSellerMessage(`已重置 ${resetSeller.username} 的密码`);
+      setResetSeller(null);
     } catch (err: any) {
       setError(err.message || '重置密码失败。');
+    } finally {
+      setResettingPassword(false);
     }
   };
 
@@ -506,7 +512,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                 <div className="mt-4 flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={() => handleResetPassword(seller)}
+                    onClick={() => setResetSeller(seller)}
                     className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/20"
                   >
                     重置密码
@@ -583,6 +589,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
           ))}
         </div>
       </section>
+
+      {resetSeller && (
+        <PasswordResetDialog
+          open={Boolean(resetSeller)}
+          seller={resetSeller}
+          loading={resettingPassword}
+          onCancel={() => setResetSeller(null)}
+          onConfirm={handleResetPassword}
+        />
+      )}
     </div>
   );
 };

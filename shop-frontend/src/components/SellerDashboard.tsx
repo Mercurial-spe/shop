@@ -3,6 +3,7 @@ import { apiService } from '../services/api';
 import type { ProductCategory, User } from '../services/api';
 import type { Product } from '../types/Product';
 import AddProductForm from './AddProductForm';
+import ProductEditDialog from './ProductEditDialog';
 
 interface SellerOrderItem {
   orderId: number;
@@ -44,6 +45,8 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [categoryName, setCategoryName] = useState('');
   const [categoryMessage, setCategoryMessage] = useState('');
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [savingProduct, setSavingProduct] = useState(false);
 
   const loadAll = async () => {
     try {
@@ -108,32 +111,17 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
     }
   };
 
-  const handleEdit = async (product: Product) => {
-    const priceInput = window.prompt('请输入新的价格（¥）', product.price.toString());
-    if (priceInput == null) return;
-    const stockInput = window.prompt('请输入新的库存数量', (product.stockQuantity ?? 0).toString());
-    if (stockInput == null) return;
-
-    const updatedPrice = Number(priceInput);
-    const updatedStock = Number(stockInput);
-
-    if (Number.isNaN(updatedPrice) || Number.isNaN(updatedStock)) {
-      alert('请输入有效的数字。');
-      return;
-    }
-
+  const handleSaveProduct = async (updates: Partial<Product>) => {
+    if (!editingProduct) return;
+    setSavingProduct(true);
     try {
-      const updated = await apiService.updateProduct(product.id, user.id, {
-        name: product.name,
-        description: product.description,
-        price: updatedPrice,
-        category: product.category,
-        imageUrl: product.imageUrl,
-        stockQuantity: updatedStock,
-      });
+      const updated = await apiService.updateProduct(editingProduct.id, user.id, updates);
       setProducts((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+      setEditingProduct(null);
     } catch (err: any) {
       alert(err.message || '更新失败，请稍后再试。');
+    } finally {
+      setSavingProduct(false);
     }
   };
 
@@ -445,7 +433,7 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
                 <div className="flex items-center gap-4">
                   <span className="text-cyan-200 font-mono font-bold">¥{product.price.toFixed(2)}</span>
                   <button
-                    onClick={() => handleEdit(product)}
+                    onClick={() => setEditingProduct(product)}
                     className="px-4 py-2 rounded-xl bg-white/10 text-slate-200 hover:bg-white/20 transition-all"
                   >
                     编辑
@@ -488,6 +476,17 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
           </div>
         )}
       </div>
+
+      {editingProduct && (
+        <ProductEditDialog
+          open={Boolean(editingProduct)}
+          product={editingProduct}
+          categories={categories}
+          loading={savingProduct}
+          onCancel={() => setEditingProduct(null)}
+          onSave={handleSaveProduct}
+        />
+      )}
     </div>
   );
 };
