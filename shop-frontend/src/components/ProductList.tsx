@@ -20,6 +20,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [hasInteracted, setHasInteracted] = useState(false);
   const [recommendations, setRecommendations] = useState<RecommendationProduct[]>([]);
   const [recommendationLoading, setRecommendationLoading] = useState(false);
@@ -126,7 +127,18 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   ];
 
   const activePredicate = filters.find((filter) => filter.id === activeFilter)?.predicate ?? filters[0].predicate;
-  const visibleProducts = products.filter(activePredicate);
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const visibleProducts = products
+    .filter(activePredicate)
+    .filter((product) => {
+      if (!normalizedSearch) return true;
+      return [
+        product.name,
+        product.description,
+        product.category,
+        product.seller?.username,
+      ].some((value) => value?.toLowerCase().includes(normalizedSearch));
+    });
 
   const containerVariants = hasInteracted
     ? { hidden: {}, show: {} }
@@ -195,6 +207,46 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
         />
       )}
 
+      <div className="rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-cyan-200">product search</p>
+            <h3 className="mt-2 text-2xl font-black text-white">商品查询</h3>
+          </div>
+          <div className="flex w-full flex-col gap-3 md:w-[520px] md:flex-row">
+            <input
+              value={searchTerm}
+              onChange={(event) => {
+                setHasInteracted(true);
+                setSearchTerm(event.target.value);
+              }}
+              className="min-w-0 flex-1 rounded-xl border border-white/15 bg-slate-950/45 px-4 py-3 text-sm font-semibold text-white outline-none placeholder:text-slate-500 focus:border-cyan-200"
+              placeholder="输入商品名、类别、描述或销售人员"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => {
+                  setHasInteracted(true);
+                  setSearchTerm('');
+                }}
+                className="rounded-xl border border-white/20 px-4 py-3 text-sm font-bold text-slate-100 transition hover:border-cyan-200 hover:text-cyan-100"
+              >
+                清空
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-slate-300">
+          <span>当前显示 {visibleProducts.length} / {products.length} 件商品</span>
+          {normalizedSearch && (
+            <span className="rounded-full border border-cyan-200/25 bg-cyan-300/10 px-3 py-1 font-bold text-cyan-100">
+              关键词：{searchTerm.trim()}
+            </span>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-8">
         <FilterSidebar
           filters={filters}
@@ -229,6 +281,14 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
           ))}
         </motion.div>
       </div>
+
+      {products.length > 0 && visibleProducts.length === 0 && (
+        <div className="text-center py-20 bg-white/10 rounded-3xl border border-white/20">
+          <div className="text-5xl mb-5 text-cyan-200">?</div>
+          <h3 className="text-xl font-bold text-white mb-2">没有匹配的商品</h3>
+          <p className="text-slate-300">请换一个关键词，或切换左侧筛选条件。</p>
+        </div>
+      )}
 
       {products.length === 0 && !showAddForm && (
         <div className="text-center py-32 bg-white/10 rounded-3xl border border-white/20">
