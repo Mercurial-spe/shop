@@ -111,3 +111,10 @@ npm run dev
 ```
 
 需要 Node.js 20+ / Java 21+ / MySQL 8+。Spring Boot 和前后端依赖由 Maven / npm 根据项目配置自动下载。
+
+## 原生 Ubuntu 部署
+
+推荐的线上验收路径是 Ubuntu + MySQL + Spring Boot Jar + React build + Nginx。详细步骤见：
+
+- [docs/部署说明.md](docs/部署说明.md)
+- [deploy/nginx/mercurial-shop.conf](deploy/nginx/mercurial-shop.conf)
