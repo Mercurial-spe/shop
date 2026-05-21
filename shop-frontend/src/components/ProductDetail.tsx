@@ -1,8 +1,9 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { apiService } from '../services/api';
-import type { User } from '../services/api';
+import type { RecommendationProduct, User } from '../services/api';
 import type { Product } from '../types/Product';
+import RecommendationSection from './RecommendationSection';
 
 interface ProductDetailProps {
   user: User | null;
@@ -13,6 +14,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [relatedProducts, setRelatedProducts] = useState<RecommendationProduct[]>([]);
+  const [relatedLoading, setRelatedLoading] = useState(false);
+  const [relatedError, setRelatedError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,6 +46,35 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
     };
   }, [product?.id, user?.id]);
 
+  useEffect(() => {
+    let active = true;
+    if (!product?.id) {
+      setRelatedProducts([]);
+      return;
+    }
+
+    setRelatedLoading(true);
+    setRelatedError(null);
+    apiService.getRelatedProducts(product.id, user?.role === 'CUSTOMER' ? user.id : undefined, 6)
+      .then((data) => {
+        if (active) setRelatedProducts(data);
+      })
+      .catch((err) => {
+        console.error('加载相关商品失败', err);
+        if (active) {
+          setRelatedProducts([]);
+          setRelatedError('相关商品暂时不可用，请稍后再试。');
+        }
+      })
+      .finally(() => {
+        if (active) setRelatedLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [product?.id, user?.id, user?.role]);
+
   const handleAddToCart = async () => {
     if (!user) {
       alert('请先登录。');
@@ -59,6 +92,24 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
       } catch (err) {
         alert('加入购物车失败。');
       }
+    }
+  };
+
+  const handleAddRecommendedToCart = async (productId: number) => {
+    if (!user) {
+      alert('请先登录。');
+      navigate('/login');
+      return;
+    }
+    if (user.role !== 'CUSTOMER') {
+      alert('只有顾客账号可以加入购物车。');
+      return;
+    }
+    try {
+      await apiService.addToCart(user.id, productId, 1);
+      alert('已加入购物车。');
+    } catch (err) {
+      alert('加入购物车失败。');
     }
   };
 
@@ -94,7 +145,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
   if (!product) return <div className="text-center py-20 text-slate-300">未找到商品。</div>;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
+    <div className="max-w-6xl mx-auto px-4 py-12 space-y-12">
       <Link to="/products" className="text-cyan-200 hover:text-cyan-100 mb-8 inline-flex items-center gap-2 font-medium">
         <span className="text-lg">&larr;</span> 返回商品列表
       </Link>
@@ -166,6 +217,16 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
           </div>
         </div>
       </div>
+
+      <RecommendationSection
+        title="相关商品"
+        subtitle="people also bought"
+        products={relatedProducts}
+        loading={relatedLoading}
+        error={relatedError}
+        onAddToCart={user?.role === 'CUSTOMER' ? handleAddRecommendedToCart : undefined}
+        emptyText="暂无可展示的相关商品。"
+      />
     </div>
   );
 };

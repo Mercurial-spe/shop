@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Product } from '../types/Product';
 import { apiService } from '../services/api';
-import type { ProductCategory, User } from '../services/api';
+import type { ProductCategory, RecommendationProduct, User } from '../services/api';
 import ProductCard from './ProductCard';
 import AddProductForm from './AddProductForm';
 import FilterSidebar from './FilterSidebar';
+import RecommendationSection from './RecommendationSection';
 
 interface ProductListProps {
   user: User | null;
@@ -20,6 +21,9 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [recommendations, setRecommendations] = useState<RecommendationProduct[]>([]);
+  const [recommendationLoading, setRecommendationLoading] = useState(false);
+  const [recommendationError, setRecommendationError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const loadProducts = async () => {
@@ -41,6 +45,38 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   useEffect(() => {
     loadProducts();
   }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    if (user?.role !== 'CUSTOMER') {
+      setRecommendations([]);
+      setRecommendationError(null);
+      setRecommendationLoading(false);
+      return;
+    }
+
+    setRecommendationLoading(true);
+    setRecommendationError(null);
+    apiService.getUserRecommendations(user.id, 6)
+      .then((data) => {
+        if (active) setRecommendations(data);
+      })
+      .catch((err) => {
+        console.error('加载推荐商品失败', err);
+        if (active) {
+          setRecommendations([]);
+          setRecommendationError('推荐数据暂时不可用，请先确认后端服务和演示数据。');
+        }
+      })
+      .finally(() => {
+        if (active) setRecommendationLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [user?.id, user?.role]);
 
   const handleCreated = (product: Product) => {
     setProducts((prev) => [product, ...prev]);
@@ -145,6 +181,18 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
         <div className="transition-all">
           <AddProductForm onCreated={handleCreated} sellerId={user.id} categories={categories} />
         </div>
+      )}
+
+      {user?.role === 'CUSTOMER' && (
+        <RecommendationSection
+          title="为你推荐"
+          subtitle="recommendation engine"
+          products={recommendations}
+          loading={recommendationLoading}
+          error={recommendationError}
+          onAddToCart={handleAddToCart}
+          emptyText="浏览或购买商品后，这里会展示更贴近偏好的推荐结果。"
+        />
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-8">

@@ -29,6 +29,12 @@ export interface ProductCategory {
   createdAt: string;
 }
 
+export type RecommendationProduct = Product & {
+  reason: string;
+  sellerId?: number;
+  sellerName?: string;
+};
+
 class ApiService {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -294,13 +300,13 @@ class ApiService {
     return this.request<any[]>(`/analytics/admin/customer-profiles?adminId=${adminId}`);
   }
 
-  async getUserRecommendations(userId: number, limit: number = 6): Promise<any[]> {
-    return this.request<any[]>(`/recommendations/user/${userId}?limit=${limit}`);
+  async getUserRecommendations(userId: number, limit: number = 6): Promise<RecommendationProduct[]> {
+    return this.request<RecommendationProduct[]>(`/recommendations/user/${userId}?limit=${limit}`);
   }
 
-  async getRelatedProducts(productId: number, userId?: number, limit: number = 6): Promise<any[]> {
+  async getRelatedProducts(productId: number, userId?: number, limit: number = 6): Promise<RecommendationProduct[]> {
     const userQuery = userId ? `&userId=${userId}` : '';
-    return this.request<any[]>(`/recommendations/products/${productId}/related?limit=${limit}${userQuery}`);
+    return this.request<RecommendationProduct[]>(`/recommendations/products/${productId}/related?limit=${limit}${userQuery}`);
   }
 }
 
