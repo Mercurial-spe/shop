@@ -121,3 +121,11 @@ npm run dev
 - [docs/部署说明.md](docs/部署说明.md)
 - [docs/线上验收说明.md](docs/线上验收说明.md)
 - [deploy/nginx/mercurial-shop.conf](deploy/nginx/mercurial-shop.conf)
+
+## 课程报告初稿
+
+- [需求分析报告](docs/reports/需求分析报告.md)
+- [系统设计报告](docs/reports/系统设计报告.md)
+- [系统实现报告](docs/reports/系统实现报告.md)
+- [测试报告](docs/reports/测试报告.md)
+- [AI 工具使用记录](docs/reports/AI工具使用记录.md)
