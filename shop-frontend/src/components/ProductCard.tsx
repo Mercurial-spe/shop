@@ -1,127 +1,55 @@
-﻿import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import type { Product } from '../types/Product';
+import { formatMoney } from '../utils/format';
+import { ProductFigure } from './ProductFigure';
 
-interface ProductCardProps {
+export function ProductCard({
+  actionBusy,
+  canShop = true,
+  product,
+  onAdd,
+  onBuy,
+  onInspect,
+}: {
+  actionBusy: string | null;
+  canShop?: boolean;
   product: Product;
-  onDelete?: (id: number) => void;
-  onAddToCart?: (id: number) => void;
-  className?: string;
-}
-
-const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onAddToCart, className }) => {
-  const [expanded, setExpanded] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
-
-  const priceTag = product.price < 30
-    ? { label: '平价', className: 'bg-emerald-400/20 text-emerald-100 border-emerald-300/30' }
-    : product.price < 120
-      ? { label: '精选', className: 'bg-amber-400/20 text-amber-100 border-amber-300/30' }
-      : { label: '高端', className: 'bg-cyan-400/20 text-cyan-100 border-cyan-300/30' };
-
-  const stockCount = product.stockQuantity ?? 0;
-  const stockTag = product.stockQuantity == null
-    ? { label: '库存未知', className: 'bg-white/10 text-slate-200 border-white/20' }
-    : stockCount <= 5
-      ? { label: '库存紧张', className: 'bg-orange-400/20 text-orange-100 border-orange-300/30' }
-      : { label: '库存充足', className: 'bg-sky-400/20 text-sky-100 border-sky-300/30' };
-
-  const imageHeightClass = 'h-64';
-
+  onAdd: (product: Product) => void;
+  onBuy: (product: Product) => void;
+  onInspect: (product: Product) => void;
+}) {
+  const stock = Number(product.stockQuantity ?? 0);
+  const adding = actionBusy === `cart-${product.id}`;
+  const buying = actionBusy === `buy-${product.id}`;
   return (
-    <div
-      className={`group rounded-2xl overflow-hidden border border-white/20 bg-gradient-to-br from-white/10 via-white/5 to-white/0 backdrop-blur-md transition-all duration-300 flex flex-col w-full h-full shadow-[0_12px_40px_rgba(8,47,73,0.25)] hover:shadow-[0_24px_80px_rgba(34,211,238,0.25)] ${className ?? ''}`}
-    >
-      <div className="relative">
-        <Link to={`/product/${product.id}`} className={`relative block overflow-hidden ${imageHeightClass}`} data-cursor="media">
-          <img
-            src={product.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image'}
-            alt={product.name}
-            onLoad={() => setImageLoaded(true)}
-            className={`w-full h-64 object-cover transform group-hover:scale-110 transition-transform duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-          />
-          <div className={`absolute inset-0 skeleton ${imageLoaded ? 'opacity-0' : 'opacity-100'}`}></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-        </Link>
-
-        <div className="absolute top-3 left-3 flex gap-2">
-          <span className={`px-3 py-1 rounded-full text-[0.65rem] font-danger font-bold uppercase tracking-widest border ${priceTag.className}`}>
-            {priceTag.label}
-          </span>
-          <span className={`px-3 py-1 rounded-full text-[0.65rem] font-danger font-bold uppercase tracking-widest border ${stockTag.className}`}>
-            {stockTag.label}
-          </span>
-          {product.category && (
-            <span className="px-3 py-1 rounded-full text-[0.65rem] font-danger font-bold uppercase tracking-widest border bg-violet-400/20 text-violet-100 border-violet-300/30">
-              {product.category}
-            </span>
-          )}
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setExpanded((prev) => !prev)}
-          className="absolute top-3 right-3 px-3 py-1 rounded-full text-[0.65rem] font-danger font-bold uppercase tracking-widest bg-white/20 text-white shadow-sm hover:bg-white/30"
-          aria-expanded={expanded}
-        >
-          {expanded ? '收起' : '详情'}
-        </button>
+    <article className="product-card">
+      <button className="image-button" type="button" onClick={() => onInspect(product)}>
+        <ProductFigure product={product} />
+      </button>
+      <div className="product-meta">
+        <span className="category-pill">{product.category ?? '未分类'}</span>
+        <h3>{product.name}</h3>
+        <p>{product.description}</p>
       </div>
-
-      <div className="p-5 flex flex-col flex-grow text-slate-100">
-        <div className="mb-2 flex justify-between items-start gap-2">
-          <Link to={`/product/${product.id}`} className="hover:text-cyan-200 transition-colors">
-            <h3 className="text-lg font-bold text-slate-100 leading-tight line-clamp-2">{product.name}</h3>
-          </Link>
-          <span className="text-2xl font-righteous font-bold text-cyan-200 drop-shadow-sm">¥{product.price.toFixed(2)}</span>
+      <div className="product-bottom">
+        <div>
+          <strong>{formatMoney(product.price)}</strong>
+          <small className={stock <= 5 ? 'danger-text' : ''}>库存 {stock}</small>
         </div>
-
-        <p className="text-sm text-slate-300 line-clamp-2 mb-4 flex-grow">
-          {product.description}
-        </p>
-
-        <div
-          className={`overflow-hidden transition-all duration-300 ${expanded ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}
-        >
-          <div className="pt-3 space-y-3 text-sm text-slate-300">
-            <div className="flex items-center justify-between text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">
-              <span>库存</span>
-              <span>{product.stockQuantity == null ? '未知' : `剩余 ${stockCount}`}</span>
-            </div>
-            <p className="leading-relaxed">精选品质，细节用心，适合日常搭配与使用。</p>
-          </div>
-        </div>
-
-        <div className="flex gap-2 mt-4 opacity-100 translate-y-0 sm:opacity-0 sm:translate-y-6 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 transition-all duration-300">
-          {onDelete && (
-            <button
-              type="button"
-              onClick={() => {
-                if (window.confirm(`确认删除 ${product.name} 吗？`)) {
-                  onDelete(product.id);
-                }
-              }}
-              className="flex-1 py-2.5 bg-red-500/80 hover:bg-red-500 text-white text-sm font-bold font-starborn rounded-xl transition-all transform active:scale-95 border border-red-300/40 shadow-[0_12px_28px_rgba(239,68,68,0.35)]"
-            >
-              删除商品
+        {canShop ? (
+          <div className="button-pair">
+            <button className="ghost-button" disabled={Boolean(actionBusy)} type="button" onClick={() => onAdd(product)}>
+              {adding ? '加入中' : '加购'}
             </button>
-          )}
-          <button
-            onClick={() => onAddToCart && onAddToCart(product.id)}
-            className="flex-1 py-2.5 bg-cyan-300 hover:bg-cyan-200 text-slate-900 text-sm font-bold font-starborn rounded-xl transition-all transform active:scale-95"
-          >
-            加入购物车
-          </button>
-          <Link
-            to={`/product/${product.id}`}
-            className="flex-1 py-2.5 border border-white/30 text-white text-sm font-bold font-starborn rounded-xl hover:border-cyan-200 hover:text-cyan-100 transition-all text-center"
-          >
+            <button className="primary-button compact" disabled={Boolean(actionBusy)} type="button" onClick={() => onBuy(product)}>
+              {buying ? '处理中' : '购买'}
+            </button>
+          </div>
+        ) : (
+          <button className="secondary-button compact" type="button" onClick={() => onInspect(product)}>
             查看详情
-          </Link>
-        </div>
+          </button>
+        )}
       </div>
-    </div>
+    </article>
   );
-};
-
-export default ProductCard;
+}

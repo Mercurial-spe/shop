@@ -35,6 +35,8 @@ export type RecommendationProduct = Product & {
   sellerName?: string;
 };
 
+export type ApiObject = Record<string, unknown>;
+
 class ApiService {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -107,22 +109,22 @@ class ApiService {
     });
   }
 
-  async purchaseProduct(productId: number, userId: number, quantity: number = 1): Promise<any> {
-    return this.request<any>(`/products/${productId}/purchase`, {
+  async purchaseProduct(productId: number, userId: number, quantity: number = 1): Promise<unknown> {
+    return this.request<unknown>(`/products/${productId}/purchase`, {
       method: 'POST',
       body: JSON.stringify({ quantity, userId }),
     });
   }
 
-  async payOrder(orderId: number, userId: number, paymentMethod: string): Promise<any> {
-    return this.request<any>(`/orders/${orderId}/pay`, {
+  async payOrder(orderId: number, userId: number, paymentMethod: string): Promise<unknown> {
+    return this.request<unknown>(`/orders/${orderId}/pay`, {
       method: 'POST',
       body: JSON.stringify({ userId: String(userId), paymentMethod }),
     });
   }
 
   async recordBrowse(productId: number, userId: number | null, durationSeconds: number): Promise<void> {
-    await this.request<any>('/logs/browse', {
+    await this.request<unknown>('/logs/browse', {
       method: 'POST',
       body: JSON.stringify({
         productId,
@@ -194,26 +196,26 @@ class ApiService {
     }
   }
 
-  async checkoutCart(userId: number): Promise<any> {
-    return this.request<any>(`/cart/${userId}/checkout`, {
+  async checkoutCart(userId: number): Promise<unknown> {
+    return this.request<unknown>(`/cart/${userId}/checkout`, {
       method: 'POST',
     });
   }
 
-  async getOrdersByUser(userId: number): Promise<any[]> {
-    return this.request<any[]>(`/orders/user/${userId}`);
+  async getOrdersByUser(userId: number): Promise<unknown[]> {
+    return this.request<unknown[]>(`/orders/user/${userId}`);
   }
 
-  async getOrderDetail(orderId: number, userId: number): Promise<any> {
-    return this.request<any>(`/orders/${orderId}/user/${userId}`);
+  async getOrderDetail(orderId: number, userId: number): Promise<unknown> {
+    return this.request<unknown>(`/orders/${orderId}/user/${userId}`);
   }
 
-  async getOrdersBySeller(sellerId: number): Promise<any[]> {
-    return this.request<any[]>(`/orders/seller/${sellerId}`);
+  async getOrdersBySeller(sellerId: number): Promise<unknown[]> {
+    return this.request<unknown[]>(`/orders/seller/${sellerId}`);
   }
 
-  async getSellerStats(sellerId: number): Promise<any> {
-    return this.request<any>(`/orders/seller/${sellerId}/stats`);
+  async getSellerStats(sellerId: number): Promise<ApiObject> {
+    return this.request<ApiObject>(`/orders/seller/${sellerId}/stats`);
   }
 
   // --- Admin ---
@@ -244,20 +246,20 @@ class ApiService {
     });
   }
 
-  async getLoginLogs(adminId: number): Promise<any[]> {
-    return this.request<any[]>(`/logs/login?adminId=${adminId}`);
+  async getLoginLogs(adminId: number): Promise<unknown[]> {
+    return this.request<unknown[]>(`/logs/login?adminId=${adminId}`);
   }
 
-  async getBrowseLogs(adminId: number): Promise<any[]> {
-    return this.request<any[]>(`/logs/browse?adminId=${adminId}`);
+  async getBrowseLogs(adminId: number): Promise<unknown[]> {
+    return this.request<unknown[]>(`/logs/browse?adminId=${adminId}`);
   }
 
-  async getPurchaseLogs(adminId: number): Promise<any[]> {
-    return this.request<any[]>(`/logs/purchase?adminId=${adminId}`);
+  async getPurchaseLogs(adminId: number): Promise<unknown[]> {
+    return this.request<unknown[]>(`/logs/purchase?adminId=${adminId}`);
   }
 
-  async getOperationLogs(adminId: number): Promise<any[]> {
-    return this.request<any[]>(`/logs/operation?adminId=${adminId}`);
+  async getOperationLogs(adminId: number): Promise<unknown[]> {
+    return this.request<unknown[]>(`/logs/operation?adminId=${adminId}`);
   }
 
   async resetDemoData(adminId: number): Promise<Record<string, number>> {
@@ -280,24 +282,24 @@ class ApiService {
   }
 
   // --- Analytics / Recommendations ---
-  async getAnalyticsOverview(adminId: number): Promise<any> {
-    return this.request<any>(`/analytics/admin/overview?adminId=${adminId}`);
+  async getAnalyticsOverview(adminId: number): Promise<ApiObject> {
+    return this.request<ApiObject>(`/analytics/admin/overview?adminId=${adminId}`);
   }
 
-  async getAnalyticsRankings(adminId: number): Promise<any> {
-    return this.request<any>(`/analytics/admin/rankings?adminId=${adminId}`);
+  async getAnalyticsRankings(adminId: number): Promise<ApiObject> {
+    return this.request<ApiObject>(`/analytics/admin/rankings?adminId=${adminId}`);
   }
 
-  async getAnalyticsTrends(adminId: number, period: 'day' | 'week' | 'month' = 'day'): Promise<any> {
-    return this.request<any>(`/analytics/admin/trends?adminId=${adminId}&period=${period}`);
+  async getAnalyticsTrends(adminId: number, period: 'day' | 'week' | 'month' = 'day'): Promise<ApiObject> {
+    return this.request<ApiObject>(`/analytics/admin/trends?adminId=${adminId}&period=${period}`);
   }
 
-  async getAnalyticsAnomalies(adminId: number): Promise<any> {
-    return this.request<any>(`/analytics/admin/anomalies?adminId=${adminId}`);
+  async getAnalyticsAnomalies(adminId: number): Promise<ApiObject> {
+    return this.request<ApiObject>(`/analytics/admin/anomalies?adminId=${adminId}`);
   }
 
-  async getCustomerProfiles(adminId: number): Promise<any[]> {
-    return this.request<any[]>(`/analytics/admin/customer-profiles?adminId=${adminId}`);
+  async getCustomerProfiles(adminId: number): Promise<unknown[]> {
+    return this.request<unknown[]>(`/analytics/admin/customer-profiles?adminId=${adminId}`);
   }
 
   async getUserRecommendations(userId: number, limit: number = 6): Promise<RecommendationProduct[]> {
