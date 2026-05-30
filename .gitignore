@@ -1,53 +1,34 @@
-﻿# ========================
-# æ“ä½œç³»ç»Ÿäº§ç”Ÿçš„åžƒåœ¾æ–‡ä»¶
-# ========================
+# Operating system files
 .DS_Store
 Thumbs.db
 *.log
 
-# ========================
-# IDE é…ç½® (VS Code / IntelliJ)
-# ========================
+# IDE files
 .vscode/
 .idea/
 *.iml
 *.iws
 *.ipr
 
-# ========================
-# Java / Spring Boot åŽç«¯
-# ========================
-# ç¼–è¯‘åŽçš„å­—èŠ‚ç æ–‡ä»¶å¤¹ (å¿…é¡»å¿½ç•¥ï¼Œå¦åˆ™å†²çª?
+# Java / Spring Boot
 target/
-# å„ç§ç¼–è¯‘äº§ç‰©
 *.class
 *.jar
 *.war
-# Spring Boot è¿è¡Œæ—¶çš„ä¸´æ—¶æ–‡ä»¶
 .mvn/wrapper/maven-wrapper.properties
-# ä½†æ˜¯è¦ä¿ç•?mvnw è„šæœ¬ï¼Œæ–¹ä¾¿åˆ«äººè¿è¡?
 !mvnw
 !mvnw.cmd
 
-# ========================
-# React / Node å‰ç«¯
-# ========================
-# âš ï¸ ç»å¯¹ä¸èƒ½ä¼ çš„é»‘æ´žæ–‡ä»¶å¤?(å·¨å¤§æ— æ¯”)
+# React / Node
 node_modules/
-# æ‰“åŒ…åŽçš„ç”Ÿäº§çŽ¯å¢ƒä»£ç 
 dist/
 build/
-# æœ¬åœ°æµ‹è¯•è¦†ç›–çŽ?
 coverage/
-# npm æŠ¥é”™æ—¥å¿—
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
-# ========================
-# å®‰å…¨éšæ‚£ (æ•æ„Ÿä¿¡æ¯)
-# ========================
-# å‰ç«¯çš„çŽ¯å¢ƒå˜é‡?(é€šå¸¸åŒ…å« API Key)
+# Environment and local secrets
 .env
 .env.local
 .env.development.local
@@ -56,11 +37,15 @@ pnpm-debug.log*
 shop-backend/src/main/resources/application-local.properties
 nginx.conf.md
 
-# Private local planning notes for this coursework project.
+# Removed from repository history and intentionally kept out of git
+docs/
+**/docs/
+[Aa][Gg][Ee][Nn][Tt].md
+**/[Aa][Gg][Ee][Nn][Tt].md
 AGENTS.local.md
-docs/private/
+**/AGENTS.local.md
 
-# Local agent/skill runtime metadata.
+# Local agent/skill runtime metadata
 .agents/
 .codex/
 **/.agents/
