@@ -18,26 +18,28 @@ export function ProductCard({
   onInspect: (product: Product) => void;
 }) {
   const stock = Number(product.stockQuantity ?? 0);
+  const lowStock = stock <= 5;
   const adding = actionBusy === `cart-${product.id}`;
   const buying = actionBusy === `buy-${product.id}`;
   return (
     <article className="product-card">
       <button className="image-button" type="button" onClick={() => onInspect(product)}>
         <ProductFigure product={product} />
+        <span className="product-tag category">{product.category ?? '未分类'}</span>
+        {lowStock && <span className="product-tag low-stock">库存紧张</span>}
       </button>
-      <div className="product-meta">
-        <span className="category-pill">{product.category ?? '未分类'}</span>
+      <div className="product-compact">
         <h3>{product.name}</h3>
-        <p>{product.description}</p>
-      </div>
-      <div className="product-bottom">
-        <div>
+        <div className="product-price-row">
           <strong>{formatMoney(product.price)}</strong>
-          <small className={stock <= 5 ? 'danger-text' : ''}>库存 {stock}</small>
+          <small className={lowStock ? 'danger-text' : ''}>库存 {stock}</small>
         </div>
+      </div>
+      <div className="product-reveal">
+        <p>{product.description}</p>
         {canShop ? (
           <div className="button-pair">
-            <button className="ghost-button" disabled={Boolean(actionBusy)} type="button" onClick={() => onAdd(product)}>
+            <button className="ghost-button compact" disabled={Boolean(actionBusy)} type="button" onClick={() => onAdd(product)}>
               {adding ? '加入中' : '加购'}
             </button>
             <button className="primary-button compact" disabled={Boolean(actionBusy)} type="button" onClick={() => onBuy(product)}>
@@ -45,7 +47,7 @@ export function ProductCard({
             </button>
           </div>
         ) : (
-          <button className="secondary-button compact" type="button" onClick={() => onInspect(product)}>
+          <button className="secondary-button compact full" type="button" onClick={() => onInspect(product)}>
             查看详情
           </button>
         )}

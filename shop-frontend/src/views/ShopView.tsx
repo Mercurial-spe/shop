@@ -60,30 +60,16 @@ export function ShopView({
     <section className="market-home">
       <aside className="category-rail" aria-label="商品类目">
         <h3>主题市场</h3>
-        <p className="deck-hint">鼠标靠近展开卡堆，点击进入对应类目。</p>
-        <div className={`category-deck${category === '全部' ? ' is-all' : ''}`}>
-          <button
-            className={`deck-card${category === '全部' ? ' active' : ''}`}
-            style={{ '--d': 0 } as CSSProperties}
-            type="button"
-            onClick={() => onCategory('全部')}
-          >
-            <strong>全部商品</strong>
-            <small>{allProducts.length} 件在售</small>
+        <button className={category === '全部' ? 'active' : ''} type="button" onClick={() => onCategory('全部')}>
+          全部商品
+          <small>{allProducts.length} 件在售</small>
+        </button>
+        {categoryNames.map((item) => (
+          <button className={category === item ? 'active' : ''} key={item} type="button" onClick={() => onCategory(item)}>
+            {item}
+            <small>{countByCategory(item)} 件 · 精选推荐</small>
           </button>
-          {categoryNames.map((item, index) => (
-            <button
-              className={`deck-card${category === item ? ' active' : ''}`}
-              key={item}
-              style={{ '--d': index + 1 } as CSSProperties}
-              type="button"
-              onClick={() => onCategory(item)}
-            >
-              <strong>{item}</strong>
-              <small>{countByCategory(item)} 件 · 精选推荐</small>
-            </button>
-          ))}
-        </div>
+        ))}
         <div className="rail-footnote">
           <strong>课程功能</strong>
           <span>浏览日志、推荐系统、购物车、订单支付都在前台流程中触发。</span>
