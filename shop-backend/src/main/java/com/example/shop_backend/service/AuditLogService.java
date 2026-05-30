@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AuditLogService {
@@ -101,6 +103,16 @@ public class AuditLogService {
 
     public List<OperationLog> latestOperationLogs() {
         return operationLogRepository.findTop100ByOrderByCreatedAtDesc();
+    }
+
+    /** 四类数据采集日志的总量统计，供 Admin 控制台「数据采集」卡片展示。 */
+    public Map<String, Object> logSummary() {
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("loginCount", loginLogRepository.count());
+        summary.put("browseCount", browseLogRepository.count());
+        summary.put("purchaseCount", purchaseLogRepository.count());
+        summary.put("operationCount", operationLogRepository.count());
+        return summary;
     }
 
     private String categoryOf(Product product) {

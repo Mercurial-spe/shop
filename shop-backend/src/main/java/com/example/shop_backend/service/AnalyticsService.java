@@ -216,18 +216,67 @@ public class AnalyticsService {
         return result;
     }
 
+    /**
+     * 销售趋势预测与评估。
+     * 取最近 14 天的「每日销售额」序列，做两件事：
+     * 1. 最小二乘线性回归 (y = a + b·x) 拟合日销售额趋势，得到斜率 b（日增长金额）与拟合优度 R²；
+     * 2. 用回归直线外推未来 7 天销售额之和，并辅以 7 天移动平均做平滑兜底。
+     * 这样预测既反映近期增长方向（斜率），又给出可解释的拟合质量（R²），比单纯两窗差值更稳健。
+     */
     private Map<String, Object> forecast(List<PurchaseLog> purchases) {
         LocalDate today = LocalDate.now();
+        int window = 14;
+        double[] daily = new double[window];
+        for (int i = 0; i < window; i++) {
+            // daily[0] 是 13 天前，daily[window-1] 是今天
+            LocalDate day = today.minusDays(window - 1 - i);
+            daily[i] = revenueBetween(purchases, day, day);
+        }
+
         double last7 = revenueBetween(purchases, today.minusDays(6), today);
         double previous7 = revenueBetween(purchases, today.minusDays(13), today.minusDays(7));
-        double predictedNext7 = previous7 == 0 ? last7 : last7 + (last7 - previous7) * 0.5;
+
+        // 最小二乘线性回归：x = 0..window-1
+        double n = window;
+        double sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+        for (int i = 0; i < window; i++) {
+            sumX += i;
+            sumY += daily[i];
+            sumXY += i * daily[i];
+            sumXX += (double) i * i;
+        }
+        double meanX = sumX / n;
+        double meanY = sumY / n;
+        double denom = sumXX - n * meanX * meanX;
+        double slope = denom == 0 ? 0.0 : (sumXY - n * meanX * meanY) / denom;
+        double intercept = meanY - slope * meanX;
+
+        // R²：回归直线对日销售额的解释程度
+        double ssTot = 0, ssRes = 0;
+        for (int i = 0; i < window; i++) {
+            double predicted = intercept + slope * i;
+            ssTot += (daily[i] - meanY) * (daily[i] - meanY);
+            ssRes += (daily[i] - predicted) * (daily[i] - predicted);
+        }
+        double rSquared = ssTot == 0 ? 0.0 : Math.max(0.0, 1.0 - ssRes / ssTot);
+
+        // 用回归直线外推未来 7 天（x = window .. window+6）之和，并用 7 天移动平均做下限兜底
+        double regressionNext7 = 0.0;
+        for (int i = window; i < window + 7; i++) {
+            regressionNext7 += Math.max(0.0, intercept + slope * i);
+        }
+        double movingAvgNext7 = last7; // 最近 7 天合计作为移动平均基准
+        double predictedNext7 = regressionNext7 > 0 ? regressionNext7 : movingAvgNext7;
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("last7DaysRevenue", round2(last7));
         result.put("previous7DaysRevenue", round2(previous7));
         result.put("growthRate", round4(previous7 == 0 ? 0.0 : (last7 - previous7) / previous7));
+        result.put("dailySlope", round2(slope));
+        result.put("rSquared", round4(rSquared));
+        result.put("movingAverageNext7DaysRevenue", round2(movingAvgNext7));
         result.put("predictedNext7DaysRevenue", round2(Math.max(0.0, predictedNext7)));
-        result.put("method", "最近 7 天与前 7 天差值的简单外推");
+        result.put("method", "最近 14 天日销售额最小二乘线性回归外推 (R²=" + round2(rSquared) + ")");
         return result;
     }
 

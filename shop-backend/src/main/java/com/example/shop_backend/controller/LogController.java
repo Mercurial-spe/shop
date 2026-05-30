@@ -79,4 +79,14 @@ public class LogController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/summary")
+    public ResponseEntity<?> logSummary(@RequestParam Long adminId) {
+        try {
+            accessControlService.requireAdmin(adminId);
+            return ResponseEntity.ok(auditLogService.logSummary());
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * 推荐服务。课程要求两类推荐：
+ * 1. 协同过滤推荐：基于「用户-商品购买矩阵」计算 item-item 余弦相似度，
+ *    为用户已购买/浏览过的商品找出最相似的其它商品（item-based CF）。
+ * 2. 简单推荐「浏览过此商品的人也买了」：以浏览日志找出浏览过种子商品的用户群，
+ *    再统计这群人实际购买过的其它商品。
+ * 当行为数据不足（冷启动）时，回退到「同类 + 全局热度 + 个人偏好」的内容型规则，保证总有结果。
+ */
 @Service
 public class RecommendationService {
 
@@ -43,10 +52,22 @@ public class RecommendationService {
         Set<String> preferredCategories = preferredCategories(user.getId(), purchases, browses);
         Map<Long, Double> popularityScores = popularityScores(purchases, browses);
 
+        // 协同过滤主信号：用户已经接触（购买或浏览）过的商品集合，
+        // 通过 item-item 相似度向尚未购买的商品扩散打分。
+        Set<Long> seedItems = userItemHistory(user.getId(), purchases, browses);
+        Set<Long> purchasedItems = userPurchasedItems(user.getId(), purchases);
+        Map<Long, Set<Long>> usersByItem = usersByItem(purchases);
+        Map<Long, Double> cfScores = collaborativeScores(seedItems, purchasedItems, usersByItem);
+        double maxCf = cfScores.values().stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
+
         return products.stream()
-                .sorted(Comparator.comparingDouble((Product product) -> recommendationScore(product, preferredCategories, popularityScores)).reversed())
+                .filter(product -> product.getId() != null)
+                .filter(product -> !purchasedItems.contains(product.getId()))
+                .sorted(Comparator.comparingDouble((Product product) ->
+                        hybridScore(product, preferredCategories, popularityScores, cfScores)).reversed())
                 .limit(normalizeLimit(limit))
-                .map(product -> productCard(product, reasonFor(product, preferredCategories, "结合你的浏览/购买偏好推荐")))
+                .map(product -> productCard(product,
+                        reasonForUser(product, preferredCategories, cfScores, maxCf)))
                 .collect(Collectors.toList());
     }
 
@@ -57,28 +78,132 @@ public class RecommendationService {
         List<BrowseLog> browses = browseLogRepository.findAll();
         Map<Long, Double> popularityScores = popularityScores(purchases, browses);
 
-        Set<Long> similarUsers = purchases.stream()
+        // 「浏览过此商品的人也买了」：先用浏览日志找出浏览过种子商品的用户，
+        // 再统计这群人买过哪些其它商品。
+        Set<Long> viewers = browses.stream()
                 .filter(log -> Objects.equals(log.getProductId(), productId))
-                .map(PurchaseLog::getUserId)
+                .map(BrowseLog::getUserId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        Map<Long, Long> coPurchaseCounts = purchases.stream()
-                .filter(log -> similarUsers.contains(log.getUserId()))
-                .filter(log -> !Objects.equals(log.getProductId(), productId))
+        Map<Long, Long> viewerBought = purchases.stream()
+                .filter(log -> viewers.contains(log.getUserId()))
                 .filter(log -> log.getProductId() != null)
+                .filter(log -> !Objects.equals(log.getProductId(), productId))
                 .collect(Collectors.groupingBy(PurchaseLog::getProductId, Collectors.counting()));
+
+        // item-item 协同过滤相似度：购买过种子商品的用户与购买候选商品用户的余弦相似度。
+        Map<Long, Set<Long>> usersByItem = usersByItem(purchases);
+        Map<Long, Double> itemSimilarity = itemSimilarityTo(productId, usersByItem);
+
         Set<String> userCategories = userId == null ? Set.of() : preferredCategories(userId.longValue(), purchases, browses);
 
         return products.stream()
                 .filter(product -> !Objects.equals(product.getId(), productId))
-                .sorted(Comparator.comparingDouble((Product product) -> relatedScore(seed, product, userCategories, coPurchaseCounts, popularityScores)).reversed())
+                .sorted(Comparator.comparingDouble((Product product) ->
+                        relatedScore(seed, product, userCategories, viewerBought, itemSimilarity, popularityScores)).reversed())
                 .limit(normalizeLimit(limit))
-                .map(product -> productCard(product, reasonForRelated(seed, product, coPurchaseCounts)))
+                .map(product -> productCard(product, reasonForRelated(seed, product, viewerBought, itemSimilarity)))
                 .collect(Collectors.toList());
     }
 
-    private double recommendationScore(Product product, Set<String> preferredCategories, Map<Long, Double> popularityScores) {
-        double score = popularityScores.getOrDefault(product.getId(), 0.0);
+    /** 用户接触过的商品集合（购买权重高，浏览也算），作为协同过滤的种子。 */
+    private Set<Long> userItemHistory(Long userId, List<PurchaseLog> purchases, List<BrowseLog> browses) {
+        Set<Long> items = new HashSet<>(userPurchasedItems(userId, purchases));
+        browses.stream()
+                .filter(log -> Objects.equals(log.getUserId(), userId))
+                .map(BrowseLog::getProductId)
+                .filter(Objects::nonNull)
+                .forEach(items::add);
+        return items;
+    }
+
+    private Set<Long> userPurchasedItems(Long userId, List<PurchaseLog> purchases) {
+        return purchases.stream()
+                .filter(log -> Objects.equals(log.getUserId(), userId))
+                .map(PurchaseLog::getProductId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
+    /** 倒排索引：商品 -> 购买过它的用户集合。item-item 相似度的基础。 */
+    private Map<Long, Set<Long>> usersByItem(List<PurchaseLog> purchases) {
+        Map<Long, Set<Long>> usersByItem = new HashMap<>();
+        for (PurchaseLog log : purchases) {
+            if (log.getProductId() == null || log.getUserId() == null) {
+                continue;
+            }
+            usersByItem.computeIfAbsent(log.getProductId(), key -> new HashSet<>()).add(log.getUserId());
+        }
+        return usersByItem;
+    }
+
+    /**
+     * item-based 协同过滤打分：对用户种子商品集合中的每个商品 i，
+     * 累加它与候选商品 j 的余弦相似度，得到候选商品的协同过滤得分。
+     */
+    private Map<Long, Double> collaborativeScores(Set<Long> seedItems, Set<Long> purchasedItems, Map<Long, Set<Long>> usersByItem) {
+        Map<Long, Double> scores = new HashMap<>();
+        for (Long seedItem : seedItems) {
+            Set<Long> seedUsers = usersByItem.get(seedItem);
+            if (seedUsers == null || seedUsers.isEmpty()) {
+                continue;
+            }
+            for (Map.Entry<Long, Set<Long>> entry : usersByItem.entrySet()) {
+                Long candidate = entry.getKey();
+                if (seedItems.contains(candidate) || purchasedItems.contains(candidate)) {
+                    continue;
+                }
+                double similarity = cosine(seedUsers, entry.getValue());
+                if (similarity > 0) {
+                    scores.merge(candidate, similarity, Double::sum);
+                }
+            }
+        }
+        return scores;
+    }
+
+    /** 单个种子商品与所有其它商品的 item-item 余弦相似度。 */
+    private Map<Long, Double> itemSimilarityTo(Long seedItemId, Map<Long, Set<Long>> usersByItem) {
+        Map<Long, Double> similarities = new HashMap<>();
+        Set<Long> seedUsers = usersByItem.get(seedItemId);
+        if (seedUsers == null || seedUsers.isEmpty()) {
+            return similarities;
+        }
+        for (Map.Entry<Long, Set<Long>> entry : usersByItem.entrySet()) {
+            if (Objects.equals(entry.getKey(), seedItemId)) {
+                continue;
+            }
+            double similarity = cosine(seedUsers, entry.getValue());
+            if (similarity > 0) {
+                similarities.put(entry.getKey(), similarity);
+            }
+        }
+        return similarities;
+    }
+
+    /** 两个用户集合的余弦相似度：|A∩B| / sqrt(|A|·|B|)。 */
+    private double cosine(Set<Long> a, Set<Long> b) {
+        if (a == null || b == null || a.isEmpty() || b.isEmpty()) {
+            return 0.0;
+        }
+        Set<Long> smaller = a.size() <= b.size() ? a : b;
+        Set<Long> larger = smaller == a ? b : a;
+        long intersection = smaller.stream().filter(larger::contains).count();
+        if (intersection == 0) {
+            return 0.0;
+        }
+        return intersection / Math.sqrt((double) a.size() * b.size());
+    }
+
+    private double hybridScore(
+            Product product,
+            Set<String> preferredCategories,
+            Map<Long, Double> popularityScores,
+            Map<Long, Double> cfScores
+    ) {
+        // 协同过滤是主信号，热度与个人偏好作为补充与冷启动兜底。
+        double score = cfScores.getOrDefault(product.getId(), 0.0) * 300.0;
+        score += popularityScores.getOrDefault(product.getId(), 0.0);
         if (product.getCategory() != null && preferredCategories.contains(product.getCategory())) {
             score += 100.0;
         }
@@ -92,11 +217,13 @@ public class RecommendationService {
             Product seed,
             Product product,
             Set<String> userCategories,
-            Map<Long, Long> coPurchaseCounts,
+            Map<Long, Long> viewerBought,
+            Map<Long, Double> itemSimilarity,
             Map<Long, Double> popularityScores
     ) {
         double score = popularityScores.getOrDefault(product.getId(), 0.0);
-        score += coPurchaseCounts.getOrDefault(product.getId(), 0L) * 80.0;
+        score += viewerBought.getOrDefault(product.getId(), 0L) * 120.0;
+        score += itemSimilarity.getOrDefault(product.getId(), 0.0) * 200.0;
         if (Objects.equals(seed.getCategory(), product.getCategory())) {
             score += 60.0;
         }
@@ -135,16 +262,26 @@ public class RecommendationService {
         return scores;
     }
 
-    private String reasonFor(Product product, Set<String> preferredCategories, String fallback) {
+    private String reasonForUser(Product product, Set<String> preferredCategories, Map<Long, Double> cfScores, double maxCf) {
+        double cf = cfScores.getOrDefault(product.getId(), 0.0);
+        if (maxCf > 0 && cf >= maxCf * 0.6) {
+            return "协同过滤：和你兴趣相近的用户也买了";
+        }
+        if (cf > 0) {
+            return "协同过滤：与你购买/浏览过的商品相似";
+        }
         if (product.getCategory() != null && preferredCategories.contains(product.getCategory())) {
             return "你近期偏好“" + product.getCategory() + "”";
         }
-        return fallback;
+        return "结合全站热度为你推荐";
     }
 
-    private String reasonForRelated(Product seed, Product product, Map<Long, Long> coPurchaseCounts) {
-        if (coPurchaseCounts.getOrDefault(product.getId(), 0L) > 0) {
-            return "购买过当前商品的顾客也购买过";
+    private String reasonForRelated(Product seed, Product product, Map<Long, Long> viewerBought, Map<Long, Double> itemSimilarity) {
+        if (viewerBought.getOrDefault(product.getId(), 0L) > 0) {
+            return "浏览过此商品的人也买了";
+        }
+        if (itemSimilarity.getOrDefault(product.getId(), 0.0) > 0) {
+            return "协同过滤：常被一起购买";
         }
         if (Objects.equals(seed.getCategory(), product.getCategory())) {
             return "同类商品推荐";
