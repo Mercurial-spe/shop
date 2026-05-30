@@ -2973,3 +2973,257 @@ tr:last-child td {
   text-align: center;
   color: var(--muted);
 }
+
+/* ===== 销售工作台视觉优化 ===== */
+.seller-console .section-heading {
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.heading-sub {
+  flex-basis: 100%;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.seller-side-col {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.seller-card {
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  padding: 18px;
+  background: var(--paper);
+  box-shadow: 0 10px 30px rgb(30 25 17 / 6%);
+}
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.card-head h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.card-head small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.card-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--role-soft) 70%, #fff 30%);
+  color: var(--coral-dark);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* 类别标签（浅色可删除） */
+.chip-list.light {
+  margin-top: 4px;
+}
+
+.chip-list.light .chip-deletable {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: color-mix(in srgb, var(--role-soft) 45%, #fff 55%);
+  color: var(--body);
+  font-size: 13px;
+  font-weight: 700;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.chip-list.light .chip-deletable i {
+  font-style: normal;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.chip-list.light .chip-deletable:hover {
+  border-color: var(--danger);
+  background: #fbeceb;
+  color: var(--danger);
+}
+
+.chip-list.light .chip-deletable:hover i {
+  color: var(--danger);
+}
+
+.chip-empty {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* 工具按钮（导入/导出） */
+.tool-buttons {
+  display: grid;
+  gap: 10px;
+}
+
+.tool-button {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.tool-button:hover {
+  border-color: var(--coral);
+  box-shadow: 0 6px 18px rgb(200 111 81 / 12%);
+  transform: translateY(-1px);
+}
+
+.tool-button-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.tool-button-sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.tool-button.import {
+  border-style: dashed;
+  border-color: var(--role-line);
+  background: color-mix(in srgb, var(--role-soft) 35%, #fff 65%);
+}
+
+.tool-button.import input {
+  display: none;
+}
+
+.tool-button.import.busy {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+/* 带标题的表格面板 */
+.panel-surface {
+  margin-top: 18px;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--paper);
+  box-shadow: 0 10px 30px rgb(30 25 17 / 6%);
+  overflow: hidden;
+}
+
+.panel-surface-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--hairline);
+  background: color-mix(in srgb, var(--paper-deep) 30%, var(--paper) 70%);
+}
+
+.panel-surface-head h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.panel-surface-head span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.table-surface.flush {
+  margin-top: 0;
+}
+
+.table-surface.flush table {
+  min-width: 560px;
+}
+
+/* 商品单元格缩略图 */
+.cell-product {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cell-product .product-figure {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+.cell-product > span {
+  font-weight: 700;
+}
+
+.cell-tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 10px;
+  background: color-mix(in srgb, var(--role-soft) 50%, #fff 50%);
+  color: var(--coral-dark);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stock-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 10px;
+  background: #eef0e6;
+  color: #5a6a2f;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.stock-badge.low {
+  background: #fbeceb;
+  color: var(--danger);
+}
+
+.col-actions {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.seller-grid.logs {
+  margin-top: 18px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.seller-grid.logs .panel-surface {
+  margin-top: 0;
+}
+
+@media (max-width: 900px) {
+  .seller-grid.logs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
