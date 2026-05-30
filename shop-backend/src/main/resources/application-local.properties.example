@@ -1,0 +1,10 @@
+# 本地私密配置模板：复制为 application-local.properties 后填入真实值。
+# application-local.properties 已被 .gitignore 忽略，真实凭据绝不提交进仓库。
+# 用 local profile 启动即可生效：
+#   ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+# 或者通过环境变量覆盖（见 application.properties 的 SMTP_USER / SMTP_PASS）。
+
+spring.mail.host=smtp.qq.com
+spring.mail.port=465
+spring.mail.username=你的邮箱@qq.com
+spring.mail.password=你的SMTP授权码
