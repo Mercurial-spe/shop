@@ -82,6 +82,13 @@ export interface Forecast {
   method?: string;
 }
 
+export interface StatusBreakdownItem {
+  status: string;
+  label: string;
+  orderCount: number;
+  revenue: number;
+}
+
 export interface AnalyticsOverview {
   totalRevenue?: number;
   totalOrders?: number;
@@ -94,6 +101,7 @@ export interface AnalyticsOverview {
   conversionRate?: number;
   averageOrderValue?: number;
   lowStockCount?: number;
+  statusBreakdown?: StatusBreakdownItem[];
   forecast?: Forecast;
 }
 

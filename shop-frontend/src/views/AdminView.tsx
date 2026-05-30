@@ -53,6 +53,7 @@ function getProfileAccent(segment: string) {
 
 export function AdminView({
   anomalies,
+  anomaliesUpdatedAt,
   form,
   logs,
   overview,
@@ -70,6 +71,7 @@ export function AdminView({
   onResetPassword,
 }: {
   anomalies: AnalyticsAnomalies | null;
+  anomaliesUpdatedAt: string;
   form: SellerForm;
   logs: LoginLog[];
   overview: AnalyticsOverview | null;
@@ -98,6 +100,23 @@ export function AdminView({
         <MetricCard label="转化率" value={`${Math.round(Number(overview?.conversionRate ?? 0) * 100)}%`} />
         <MetricCard label="异常数" value={String(anomalies?.total ?? 0)} />
       </div>
+      {overview?.statusBreakdown && overview.statusBreakdown.length > 0 && (
+        <div className="status-board">
+          <div className="status-board-head">
+            <h3>订单状态分布</h3>
+            <span>按状态统计订单数与金额</span>
+          </div>
+          <div className="status-grid">
+            {overview.statusBreakdown.map((item) => (
+              <article className={`status-tile status-${item.status.toLowerCase()}`} key={item.status}>
+                <span className="status-name">{item.label}</span>
+                <strong>{item.orderCount}</strong>
+                <small>{formatMoney(item.revenue)}</small>
+              </article>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="analytics-grid">
         <div className="dark-panel chart-panel">
           <div className="panel-title">
@@ -200,15 +219,28 @@ export function AdminView({
           )}
         </div>
         <div className="dark-panel">
-          <h3>实时异常</h3>
+          <div className="panel-title">
+            <h3>实时异常</h3>
+            <span className="live-indicator">
+              <i className="live-dot" />
+              实时{anomaliesUpdatedAt ? ` · ${anomaliesUpdatedAt}` : ''}
+            </span>
+          </div>
           <div className="alert-list">
-            {(anomalies?.all ?? []).slice(0, 8).map((item, index) => (
-              <article key={`${item.type}-${item.productId ?? item.ipAddress ?? index}`}>
-                <strong>{item.title}</strong>
-                <span>{item.productName ?? item.ipAddress}</span>
-                <small>{item.message}</small>
+            {(anomalies?.all ?? []).length === 0 ? (
+              <article>
+                <strong>暂无异常</strong>
+                <small>系统每 15 秒自动巡检，发现异常会即时出现在这里。</small>
               </article>
-            ))}
+            ) : (
+              (anomalies?.all ?? []).slice(0, 8).map((item, index) => (
+                <article key={`${item.type}-${item.productId ?? item.ipAddress ?? index}`}>
+                  <strong>{item.title}</strong>
+                  <span>{item.productName ?? item.ipAddress}</span>
+                  <small>{item.message}</small>
+                </article>
+              ))
+            )}
           </div>
           <div className="download-row">
             <button className="secondary-button" type="button" onClick={onResetDemo}>重置演示数据</button>

@@ -63,6 +63,7 @@ public class DemoDataService {
         generateLoginLogs(actors);
         generateBrowseLogs(customers, products);
         generateOrdersAndPurchaseLogs(customers, products);
+        generateRecentStatusOrders(customers, products);
         generateOperationLogs(admin, seller01, seller02);
 
         OperationLog resetLog = new OperationLog();
@@ -259,6 +260,60 @@ public class DemoDataService {
         purchaseLogRepository.save(log);
     }
 
+    /**
+     * 补充「待支付 / 已支付」状态的近期订单，让管理台的订单状态分布四种都有数据。
+     * 待支付：仅建单、不减库存、不写购买日志（与结算流程一致）。
+     * 已支付：减库存并写购买日志（与支付流程一致）。
+     */
+    private void generateRecentStatusOrders(List<User> customers, List<Product> products) {
+        LocalDateTime now = LocalDateTime.now();
+        // 待支付订单（2 笔）
+        createStatusOrder(customers.get(0), products.get(2), 1, now.minusHours(5), OrderStatus.PENDING_PAYMENT);
+        createStatusOrder(customers.get(1), products.get(4), 1, now.minusHours(2), OrderStatus.PENDING_PAYMENT);
+        // 已支付（待发货）订单（2 笔）
+        createStatusOrder(customers.get(0), products.get(1), 1, now.minusHours(8), OrderStatus.PAID);
+        createStatusOrder(customers.get(1), products.get(3), 2, now.minusHours(3), OrderStatus.PAID);
+    }
+
+    private void createStatusOrder(User customer, Product product, int quantity, LocalDateTime createdAt, OrderStatus status) {
+        Order order = new Order();
+        order.setUser(customer);
+        order.setCreatedAt(createdAt);
+        order.setStatus(status);
+
+        OrderItem item = new OrderItem();
+        item.setOrder(order);
+        item.setProduct(product);
+        item.setSeller(product.getSeller());
+        item.setQuantity(quantity);
+        item.setPrice(product.getPrice());
+        order.getItems().add(item);
+
+        if (status == OrderStatus.PAID) {
+            order.setPaidAt(createdAt.plusMinutes(5));
+            order.setPaymentMethod("Mercurial 模拟支付");
+            int remaining = Math.max(0, (product.getStockQuantity() == null ? 0 : product.getStockQuantity()) - quantity);
+            product.setStockQuantity(remaining);
+            productRepository.save(product);
+        }
+
+        Order saved = orderRepository.save(order);
+
+        if (status == OrderStatus.PAID) {
+            PurchaseLog log = new PurchaseLog();
+            log.setUserId(customer.getId());
+            log.setUsername(customer.getUsername());
+            log.setOrderId(saved.getId());
+            log.setProductId(product.getId());
+            log.setProductName(product.getName());
+            log.setProductCategory(product.getCategory());
+            log.setUnitPrice(product.getPrice());
+            log.setQuantity(quantity);
+            log.setPurchasedAt(createdAt.plusMinutes(5));
+            purchaseLogRepository.save(log);
+        }
+    }
+
     private void generateOperationLogs(User admin, User seller01, User seller02) {
         LocalDateTime now = LocalDateTime.now();
         saveOperation(admin, "SELLER_PASSWORD_RESET", "重置销售人员密码：seller02", now.minusDays(21), "127.0.0.1");
@@ -286,7 +341,18 @@ public class DemoDataService {
     }
 
     private String ipFor(User user, int day) {
+        // 用有代表性的国内公网前两段前缀（与 IpRegionResolver 的归属表对应），
+        // 让画像能解析出真实且多样的地域；按用户稳定分配前缀，按天/用户变化主机段。
+        String[] prefixes = {
+                "219.135", // 华南·广东
+                "123.125", // 华北·北京
+                "101.226", // 华东·上海
+                "125.69",  // 西南·四川
+                "117.136"  // 华中·湖北
+        };
+        int idx = Math.floorMod(user.getId().intValue(), prefixes.length);
+        int third = Math.floorMod(day, 8);
         int tail = 20 + Math.floorMod(user.getId().intValue() * 13 + day, 180);
-        return "10.0." + Math.floorMod(day, 8) + "." + tail;
+        return prefixes[idx] + "." + third + "." + tail;
     }
 }

@@ -60,6 +60,7 @@ function App() {
   const [rankings, setRankings] = useState<AnalyticsRankings | null>(null);
   const [trends, setTrends] = useState<AnalyticsTrends | null>(null);
   const [anomalies, setAnomalies] = useState<AnalyticsAnomalies | null>(null);
+  const [anomaliesUpdatedAt, setAnomaliesUpdatedAt] = useState('');
   const [profiles, setProfiles] = useState<CustomerProfile[]>([]);
   const [logs, setLogs] = useState<LoginLog[]>([]);
   const [period, setPeriod] = useState<Period>('day');
@@ -232,6 +233,31 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, user]);
 
+  useEffect(() => {
+    if (view !== 'admin' || user?.role !== 'ADMIN') {
+      return;
+    }
+    const adminId = user.id;
+    let cancelled = false;
+    const refreshAnomalies = async () => {
+      try {
+        const next = (await apiService.getAnalyticsAnomalies(adminId)) as AnalyticsAnomalies;
+        if (!cancelled) {
+          setAnomalies(next);
+          setAnomaliesUpdatedAt(new Date().toLocaleTimeString('zh-CN', { hour12: false }));
+        }
+      } catch {
+        // 轮询失败静默跳过，下个周期再试
+      }
+    };
+    void refreshAnomalies();
+    const timer = window.setInterval(() => void refreshAnomalies(), 15000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [view, user]);
+
   const reportError = (error: unknown, fallback: string) => {
     setNotice(error instanceof Error ? error.message : fallback);
   };
@@ -321,6 +347,7 @@ function App() {
       setRankings(nextRankings as AnalyticsRankings);
       setTrends(nextTrends as AnalyticsTrends);
       setAnomalies(nextAnomalies as AnalyticsAnomalies);
+      setAnomaliesUpdatedAt(new Date().toLocaleTimeString('zh-CN', { hour12: false }));
       setProfiles(nextProfiles as CustomerProfile[]);
       setLogs([...(loginLogs as LoginLog[]).slice(0, 5), ...(operationLogs as LoginLog[]).slice(0, 5)]);
     } catch (error) {
@@ -812,6 +839,7 @@ function App() {
           {view === 'admin' && (
             <AdminView
               anomalies={anomalies}
+              anomaliesUpdatedAt={anomaliesUpdatedAt}
               form={sellerForm}
               logs={logs}
               overview={overview}

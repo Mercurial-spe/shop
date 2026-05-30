@@ -1,14 +1,19 @@
 package com.example.shop_backend.service;
 
 import com.example.shop_backend.model.BrowseLog;
+import com.example.shop_backend.model.Order;
+import com.example.shop_backend.model.OrderItem;
+import com.example.shop_backend.model.OrderStatus;
 import com.example.shop_backend.model.Product;
 import com.example.shop_backend.model.PurchaseLog;
 import com.example.shop_backend.model.User;
 import com.example.shop_backend.model.UserRole;
 import com.example.shop_backend.repository.BrowseLogRepository;
+import com.example.shop_backend.repository.OrderRepository;
 import com.example.shop_backend.repository.ProductRepository;
 import com.example.shop_backend.repository.PurchaseLogRepository;
 import com.example.shop_backend.repository.UserRepository;
+import com.example.shop_backend.util.IpRegionResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +48,9 @@ public class AnalyticsService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private OrderRepository orderRepository;
+
     public Map<String, Object> overview(Long adminId) {
         accessControlService.requireAdmin(adminId);
         List<PurchaseLog> purchases = purchaseLogRepository.findAll();
@@ -69,6 +77,7 @@ public class AnalyticsService {
         result.put("conversionRate", round4(conversionRate));
         result.put("averageOrderValue", round2(totalOrders == 0 ? 0.0 : totalRevenue / totalOrders));
         result.put("lowStockCount", products.stream().filter(this::isLowStock).count());
+        result.put("statusBreakdown", salesByStatus(orderRepository.findAll()));
         result.put("forecast", forecast(purchases));
         return result;
     }
@@ -192,12 +201,7 @@ public class AnalyticsService {
 
         double spend = userPurchases.stream().mapToDouble(this::lineAmount).sum();
         String favoriteCategory = favoriteCategory(userPurchases, userBrowses);
-        String region = userBrowses.stream()
-                .map(BrowseLog::getIpAddress)
-                .filter(Objects::nonNull)
-                .findFirst()
-                .map(this::mockRegion)
-                .orElse("未知地区");
+        String region = resolveRegion(userBrowses);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("userId", customer.getId());
@@ -225,6 +229,56 @@ public class AnalyticsService {
         result.put("predictedNext7DaysRevenue", round2(Math.max(0.0, predictedNext7)));
         result.put("method", "最近 7 天与前 7 天差值的简单外推");
         return result;
+    }
+
+    /**
+     * 按订单状态分组统计：每个状态的订单数与金额合计（金额 = 订单内各行 price×quantity）。
+     * 覆盖全部四种状态，无数据的状态也返回 0，便于前端稳定渲染。
+     */
+    private List<Map<String, Object>> salesByStatus(List<Order> orders) {
+        Map<OrderStatus, long[]> counts = new LinkedHashMap<>();
+        Map<OrderStatus, Double> revenue = new LinkedHashMap<>();
+        for (OrderStatus status : OrderStatus.values()) {
+            counts.put(status, new long[]{0L});
+            revenue.put(status, 0.0);
+        }
+        for (Order order : orders) {
+            OrderStatus status = order.getStatus();
+            if (status == null) {
+                continue;
+            }
+            counts.get(status)[0] += 1;
+            double orderAmount = order.getItems() == null ? 0.0 : order.getItems().stream()
+                    .mapToDouble(this::orderItemAmount)
+                    .sum();
+            revenue.merge(status, orderAmount, Double::sum);
+        }
+
+        List<Map<String, Object>> breakdown = new ArrayList<>();
+        for (OrderStatus status : OrderStatus.values()) {
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("status", status.name());
+            entry.put("label", statusLabel(status));
+            entry.put("orderCount", counts.get(status)[0]);
+            entry.put("revenue", round2(revenue.get(status)));
+            breakdown.add(entry);
+        }
+        return breakdown;
+    }
+
+    private double orderItemAmount(OrderItem item) {
+        double price = item.getPrice() == null ? 0.0 : item.getPrice();
+        int quantity = item.getQuantity() == null ? 0 : item.getQuantity();
+        return price * quantity;
+    }
+
+    private String statusLabel(OrderStatus status) {
+        return switch (status) {
+            case PENDING_PAYMENT -> "待支付";
+            case PAID -> "已支付";
+            case SHIPPED -> "已发货";
+            case RECEIVED -> "已收货";
+        };
     }
 
     private List<Map<String, Object>> detectSalesSpike(List<PurchaseLog> purchases, LocalDate today) {
@@ -279,6 +333,7 @@ public class AnalyticsService {
     private List<Map<String, Object>> detectSuspiciousBrowse(List<BrowseLog> browses, LocalDate today) {
         Map<String, Long> byIp = browses.stream()
                 .filter(log -> log.getIpAddress() != null && log.getCreatedAt() != null)
+                .filter(log -> !isLoopback(log.getIpAddress()))
                 .filter(log -> !log.getCreatedAt().toLocalDate().isBefore(today.minusDays(1)))
                 .collect(Collectors.groupingBy(BrowseLog::getIpAddress, Collectors.counting()));
 
@@ -294,6 +349,11 @@ public class AnalyticsService {
                     return alert;
                 })
                 .collect(Collectors.toList());
+    }
+
+    /** 本机回环地址：本地调试时自己的访问，不应判为爬虫。 */
+    private boolean isLoopback(String ip) {
+        return ip.startsWith("127.") || ip.equals("::1") || ip.equals("0:0:0:0:0:0:0:1");
     }
 
     private Map<String, Object> productAlert(String type, String title, Product product, String message) {
@@ -384,23 +444,25 @@ public class AnalyticsService {
         return "低购买力";
     }
 
-    private String mockRegion(String ipAddress) {
-        int bucket = 0;
-        String[] parts = ipAddress.split("\\.");
-        if (parts.length >= 3) {
-            try {
-                bucket = Integer.parseInt(parts[2]);
-            } catch (NumberFormatException ignored) {
-                bucket = 0;
-            }
+    /**
+     * 先把每条浏览 IP 解析成地域，再按「地域」取众数，并排除「未知地区」。
+     * 这样本机/私网 IP（解析为未知）或爬虫私网突发不会把地域带偏；
+     * 只要该用户有过真实公网 IP 的浏览，就能稳定归属到对应地域。
+     */
+    private String resolveRegion(List<BrowseLog> userBrowses) {
+        Map<String, Long> regionCounts = userBrowses.stream()
+                .map(BrowseLog::getIpAddress)
+                .filter(Objects::nonNull)
+                .map(IpRegionResolver::resolve)
+                .filter(region -> !"未知地区".equals(region))
+                .collect(Collectors.groupingBy(region -> region, Collectors.counting()));
+        if (regionCounts.isEmpty()) {
+            return "未知地区";
         }
-        return switch (Math.floorMod(bucket, 5)) {
-            case 0 -> "华东";
-            case 1 -> "华南";
-            case 2 -> "华北";
-            case 3 -> "西南";
-            default -> "华中";
-        };
+        return regionCounts.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("未知地区");
     }
 
     private double lineAmount(PurchaseLog log) {
