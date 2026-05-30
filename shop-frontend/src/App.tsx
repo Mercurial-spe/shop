@@ -162,6 +162,9 @@ function App() {
       if (sort === 'stock') {
         return Number(a.stockQuantity ?? 0) - Number(b.stockQuantity ?? 0);
       }
+      if (sort === 'new') {
+        return Number(b.id ?? 0) - Number(a.id ?? 0);
+      }
       return Number(b.stockQuantity ?? 0) - Number(a.stockQuantity ?? 0);
     });
   }, [category, products, query, sort]);
@@ -731,9 +734,9 @@ function App() {
               <input placeholder="试试 Aurora、电脑办公、智能配件" value={query} onChange={(event) => setQuery(event.target.value)} />
               <button className="primary-button" type="button">搜索</button>
             </div>
-            <div className="hot-links" aria-label="热门搜索">
-              {['热销手机', '低库存提醒', '智能穿戴', '办公套装', '协同推荐'].map((item) => (
-                <button key={item} type="button" onClick={() => setQuery(item.replace('热销', '').replace('提醒', '').replace('套装', ''))}>
+            <div className="hot-links" aria-label="热门类目">
+              {categoryOptions.filter((item) => item !== '全部').slice(0, 6).map((item) => (
+                <button key={item} type="button" onClick={() => { setCategory(item); setQuery(''); }}>
                   {item}
                 </button>
               ))}

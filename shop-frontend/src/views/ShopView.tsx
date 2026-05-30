@@ -105,9 +105,24 @@ export function ShopView({
         </div>
 
         <div className="channel-row" aria-label="快捷频道">
-          {['限时热卖', '猜你喜欢', '低库存', '新品上架', '销量排行'].map((item) => (
-            <button key={item} type="button" onClick={() => (item === '低库存' ? onSort('stock') : onQuery(item.replace('限时', '').replace('猜你喜欢', '')))}>
-              {item}
+          {[
+            { label: '🔥 热门好物', sort: 'featured' },
+            { label: '🆕 新品上架', sort: 'new' },
+            { label: '⚡ 库存紧张', sort: 'stock' },
+            { label: '💰 价格优先', sort: 'priceAsc' },
+            { label: '💎 高端精选', sort: 'priceDesc' },
+          ].map((channel) => (
+            <button
+              className={sort === channel.sort ? 'active' : ''}
+              key={channel.label}
+              type="button"
+              onClick={() => {
+                onQuery('');
+                onCategory('全部');
+                onSort(channel.sort);
+              }}
+            >
+              {channel.label}
             </button>
           ))}
         </div>
@@ -120,6 +135,7 @@ export function ShopView({
           </select>
           <select value={sort} onChange={(event) => onSort(event.target.value)}>
             <option value="featured">综合推荐</option>
+            <option value="new">新品上架</option>
             <option value="priceAsc">价格从低到高</option>
             <option value="priceDesc">价格从高到低</option>
             <option value="stock">低库存优先</option>
