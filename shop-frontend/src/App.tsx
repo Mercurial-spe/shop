@@ -22,7 +22,9 @@ import type {
   LoginMode,
   Order,
   Period,
+  SellerBrowseLog,
   SellerOrderItem,
+  SellerPurchaseLog,
   SellerStats,
   View,
 } from './types/app';
@@ -59,6 +61,8 @@ function App() {
   const [sellerProducts, setSellerProducts] = useState<Product[]>([]);
   const [sellerOrders, setSellerOrders] = useState<SellerOrderItem[]>([]);
   const [sellerStats, setSellerStats] = useState<SellerStats | null>(null);
+  const [sellerBrowseLogs, setSellerBrowseLogs] = useState<SellerBrowseLog[]>([]);
+  const [sellerPurchaseLogs, setSellerPurchaseLogs] = useState<SellerPurchaseLog[]>([]);
   const [sellers, setSellers] = useState<User[]>([]);
   const [sellerForm, setSellerForm] = useState({ username: 'seller-new', email: 'seller-new@example.com', password: 'seller123' });
   const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
@@ -324,16 +328,20 @@ function App() {
 
   const loadSellerWorkspace = async (sellerId: number) => {
     try {
-      const [ownedProducts, orderItems, stats, nextCategories] = await Promise.all([
+      const [ownedProducts, orderItems, stats, nextCategories, browseLogs, purchaseLogs] = await Promise.all([
         apiService.getProductsBySeller(sellerId),
         apiService.getOrdersBySeller(sellerId),
         apiService.getSellerStats(sellerId),
         apiService.getCategories(),
+        apiService.getSellerBrowseLogs(sellerId),
+        apiService.getSellerPurchaseLogs(sellerId),
       ]);
       setSellerProducts(ownedProducts);
       setSellerOrders(orderItems as SellerOrderItem[]);
       setSellerStats(stats as SellerStats);
       setCategories(nextCategories);
+      setSellerBrowseLogs(browseLogs as SellerBrowseLog[]);
+      setSellerPurchaseLogs(purchaseLogs as SellerPurchaseLog[]);
     } catch (error) {
       reportError(error, '销售台加载失败。');
     }
@@ -582,6 +590,23 @@ function App() {
     } catch (error) {
       reportError(error, '类别删除失败。');
     }
+  };
+
+  const importSellerProducts = async (file: File) => {
+    if (!user || user.role !== 'SELLER') {
+      return;
+    }
+    await runAction('import-products', async () => {
+      try {
+        const text = await file.text();
+        const result = await apiService.importSellerProducts(user.id, text);
+        await Promise.all([loadSellerWorkspace(user.id), loadStorefront()]);
+        const failHint = result.failed > 0 ? `，失败 ${result.failed} 行（第 ${result.failures.map((f) => f.row).join('、')} 行）` : '';
+        setNotice(`商品导入完成：成功 ${result.imported} 行${failHint}。`);
+      } catch (error) {
+        reportError(error, '商品导入失败。');
+      }
+    });
   };
 
   const createSeller = async () => {
@@ -852,6 +877,9 @@ function App() {
               orders={sellerOrders}
               products={sellerProducts}
               stats={sellerStats}
+              browseLogs={sellerBrowseLogs}
+              purchaseLogs={sellerPurchaseLogs}
+              importing={actionBusy === 'import-products'}
               onCategoryName={setCategoryName}
               onCreateCategory={() => void createCategory()}
               onCreateProduct={() => void createProduct()}
@@ -859,6 +887,7 @@ function App() {
               onDeleteProduct={(product) => void deleteSellerProduct(product)}
               onDownloadOrders={() => user && void apiService.downloadSellerOrdersReport(user.id)}
               onDownloadProducts={() => user && void apiService.downloadSellerProductsReport(user.id)}
+              onImportProducts={(file) => void importSellerProducts(file)}
               onForm={setProductForm}
               onEditProduct={(product) => setEditingProduct(product)}
             />

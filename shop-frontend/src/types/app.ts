@@ -97,6 +97,26 @@ export interface LogSummary {
   operationCount?: number;
 }
 
+export interface SellerBrowseLog {
+  id?: number;
+  username?: string;
+  productName?: string;
+  productCategory?: string;
+  durationSeconds?: number;
+  ipAddress?: string;
+  createdAt?: string;
+}
+
+export interface SellerPurchaseLog {
+  id?: number;
+  username?: string;
+  productName?: string;
+  productCategory?: string;
+  unitPrice?: number;
+  quantity?: number;
+  purchasedAt?: string;
+}
+
 export interface StatusBreakdownItem {
   status: string;
   label: string;

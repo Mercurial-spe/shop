@@ -285,6 +285,27 @@ class ApiService {
     return this.downloadCsv(`/export/seller/orders?sellerId=${sellerId}`, 'seller-orders-report.csv');
   }
 
+  async importSellerProducts(sellerId: number, csvContent: string): Promise<{ imported: number; failed: number; failures: { row: number; reason: string }[] }> {
+    const response = await fetch(`${API_BASE_URL}/export/seller/products/import?sellerId=${sellerId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: csvContent,
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || '导入失败');
+    }
+    return response.json();
+  }
+
+  async getSellerBrowseLogs(sellerId: number): Promise<unknown[]> {
+    return this.request<unknown[]>(`/logs/seller/browse?sellerId=${sellerId}`);
+  }
+
+  async getSellerPurchaseLogs(sellerId: number): Promise<unknown[]> {
+    return this.request<unknown[]>(`/logs/seller/purchase?sellerId=${sellerId}`);
+  }
+
   // --- Analytics / Recommendations ---
   async getAnalyticsOverview(adminId: number): Promise<ApiObject> {
     return this.request<ApiObject>(`/analytics/admin/overview?adminId=${adminId}`);

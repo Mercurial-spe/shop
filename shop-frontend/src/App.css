@@ -2940,3 +2940,36 @@ tr:last-child td {
 .status-pill.status-paid { background: #e8f4ef; color: #2f6f67; }
 .status-pill.status-shipped { background: #e6efff; color: #2a55b0; }
 .status-pill.status-received { background: #eef0e6; color: #5a6a2f; }
+
+/* 商品 CSV 导入按钮 */
+.import-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  border: 1px dashed var(--role-line);
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--role-soft) 45%, #fff 55%);
+  color: var(--coral-dark);
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.import-button input {
+  display: none;
+}
+
+.import-hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.table-empty {
+  padding: 18px;
+  text-align: center;
+  color: var(--muted);
+}
