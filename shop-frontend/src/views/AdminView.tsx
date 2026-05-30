@@ -6,10 +6,11 @@ import type {
   AnalyticsRankings,
   AnalyticsTrends,
   CustomerProfile,
+  LogSummary,
   LoginLog,
   Period,
 } from '../types/app';
-import { BarChart, MetricCard, RankingPanel } from '../components/AnalyticsWidgets';
+import { MetricCard, RankingChart, StatusDonut, TrendChart } from '../components/AnalyticsWidgets';
 import { formatDate, formatMoney } from '../utils/format';
 
 type SellerForm = { username: string; email: string; password: string };
@@ -56,6 +57,7 @@ export function AdminView({
   anomaliesUpdatedAt,
   form,
   logs,
+  logSummary,
   overview,
   period,
   profiles,
@@ -74,6 +76,7 @@ export function AdminView({
   anomaliesUpdatedAt: string;
   form: SellerForm;
   logs: LoginLog[];
+  logSummary: LogSummary | null;
   overview: AnalyticsOverview | null;
   period: Period;
   profiles: CustomerProfile[];
@@ -98,31 +101,40 @@ export function AdminView({
         <MetricCard label="销售额" value={formatMoney(overview?.totalRevenue)} />
         <MetricCard label="订单数" value={String(overview?.totalOrders ?? 0)} />
         <MetricCard label="转化率" value={`${Math.round(Number(overview?.conversionRate ?? 0) * 100)}%`} />
+        <MetricCard label="客单价" value={formatMoney(overview?.averageOrderValue)} />
+        <MetricCard label="预测下7天" value={formatMoney(trends?.forecast?.predictedNext7DaysRevenue ?? overview?.forecast?.predictedNext7DaysRevenue)} />
         <MetricCard label="异常数" value={String(anomalies?.total ?? 0)} />
       </div>
-      {overview?.statusBreakdown && overview.statusBreakdown.length > 0 && (
-        <div className="status-board">
-          <div className="status-board-head">
-            <h3>订单状态分布</h3>
-            <span>按状态统计订单数与金额</span>
-          </div>
-          <div className="status-grid">
-            {overview.statusBreakdown.map((item) => (
-              <article className={`status-tile status-${item.status.toLowerCase()}`} key={item.status}>
-                <span className="status-name">{item.label}</span>
-                <strong>{item.orderCount}</strong>
-                <small>{formatMoney(item.revenue)}</small>
-              </article>
-            ))}
-          </div>
+      <div className="data-collection-board">
+        <div className="status-board-head">
+          <h3>数据采集总量</h3>
+          <span>登录 / 浏览 / 购买 / 操作四类行为日志</span>
         </div>
-      )}
+        <div className="collection-grid">
+          <article className="collection-tile">
+            <span>登录日志</span>
+            <strong>{formatCount(logSummary?.loginCount)}</strong>
+          </article>
+          <article className="collection-tile">
+            <span>浏览日志</span>
+            <strong>{formatCount(logSummary?.browseCount)}</strong>
+          </article>
+          <article className="collection-tile">
+            <span>购买日志</span>
+            <strong>{formatCount(logSummary?.purchaseCount)}</strong>
+          </article>
+          <article className="collection-tile">
+            <span>操作日志</span>
+            <strong>{formatCount(logSummary?.operationCount)}</strong>
+          </article>
+        </div>
+      </div>
       <div className="analytics-grid">
         <div className="dark-panel chart-panel">
           <div className="panel-title">
             <div>
               <h3>销售趋势</h3>
-              <p className="forecast-text">观察近 10 个周期的销售走势与预测区间。</p>
+              <p className="forecast-text">观察近 12 个周期的销售走势与线性回归预测。</p>
             </div>
             <div className="segmented small">
               {(['day', 'week', 'month'] as Period[]).map((item) => (
@@ -132,11 +144,24 @@ export function AdminView({
               ))}
             </div>
           </div>
-          <BarChart metrics={trends?.points ?? []} />
+          <TrendChart metrics={trends?.points ?? []} />
           <p className="forecast-text">
-            下 7 天预测 {formatMoney(trends?.forecast?.predictedNext7DaysRevenue)} / {trends?.forecast?.method ?? '等待数据'}
+            预测下 7 天 {formatMoney(trends?.forecast?.predictedNext7DaysRevenue)}
+            {trends?.forecast?.rSquared != null && ` · 拟合优度 R²=${trends.forecast.rSquared}`}
+            {trends?.forecast?.dailySlope != null && ` · 日均斜率 ${formatMoney(trends.forecast.dailySlope)}`}
           </p>
         </div>
+        <div className="dark-panel chart-panel">
+          <div className="panel-title">
+            <div>
+              <h3>订单状态分布</h3>
+              <p className="forecast-text">按状态统计订单数占比。</p>
+            </div>
+          </div>
+          <StatusDonut items={overview?.statusBreakdown ?? []} />
+        </div>
+      </div>
+      <div className="analytics-grid">
         <div className="control-panel">
           <h3>销售人员 ID 管理</h3>
           <label>用户名<input value={form.username} onChange={(event) => onForm({ ...form, username: event.target.value })} /></label>
@@ -155,13 +180,42 @@ export function AdminView({
             ))}
           </div>
         </div>
+        <div className="dark-panel">
+          <div className="panel-title">
+            <h3>实时异常</h3>
+            <span className="live-indicator">
+              <i className="live-dot" />
+              实时{anomaliesUpdatedAt ? ` · ${anomaliesUpdatedAt}` : ''}
+            </span>
+          </div>
+          <div className="alert-list">
+            {(anomalies?.all ?? []).length === 0 ? (
+              <article>
+                <strong>暂无异常</strong>
+                <small>系统每 15 秒自动巡检，发现异常会即时出现在这里。</small>
+              </article>
+            ) : (
+              (anomalies?.all ?? []).slice(0, 8).map((item, index) => (
+                <article key={`${item.type}-${item.productId ?? item.ipAddress ?? index}`}>
+                  <strong>{item.title}</strong>
+                  <span>{item.productName ?? item.ipAddress}</span>
+                  <small>{item.message}</small>
+                </article>
+              ))
+            )}
+          </div>
+          <div className="download-row">
+            <button className="secondary-button" type="button" onClick={onResetDemo}>重置演示数据</button>
+            <button className="secondary-button" type="button" onClick={onDownload}>导出报表</button>
+          </div>
+        </div>
       </div>
       <div className="analytics-grid three">
-        <RankingPanel title="商品排行" metrics={rankings?.products ?? []} />
-        <RankingPanel title="类别排行" metrics={rankings?.categories ?? []} />
-        <RankingPanel title="销售排行" metrics={rankings?.sellers ?? []} />
+        <RankingChart title="商品排行" metrics={rankings?.products ?? []} />
+        <RankingChart title="类别排行" metrics={rankings?.categories ?? []} />
+        <RankingChart title="销售排行" metrics={rankings?.sellers ?? []} />
       </div>
-      <div className="analytics-grid">
+      <div className="analytics-grid single">
         <div className="control-panel">
           <h3>顾客画像</h3>
           {profiles.length ? (
@@ -217,35 +271,6 @@ export function AdminView({
               <p>当系统积累到足够的浏览和订单数据后，这里会自动生成用户分群与运营建议。</p>
             </div>
           )}
-        </div>
-        <div className="dark-panel">
-          <div className="panel-title">
-            <h3>实时异常</h3>
-            <span className="live-indicator">
-              <i className="live-dot" />
-              实时{anomaliesUpdatedAt ? ` · ${anomaliesUpdatedAt}` : ''}
-            </span>
-          </div>
-          <div className="alert-list">
-            {(anomalies?.all ?? []).length === 0 ? (
-              <article>
-                <strong>暂无异常</strong>
-                <small>系统每 15 秒自动巡检，发现异常会即时出现在这里。</small>
-              </article>
-            ) : (
-              (anomalies?.all ?? []).slice(0, 8).map((item, index) => (
-                <article key={`${item.type}-${item.productId ?? item.ipAddress ?? index}`}>
-                  <strong>{item.title}</strong>
-                  <span>{item.productName ?? item.ipAddress}</span>
-                  <small>{item.message}</small>
-                </article>
-              ))
-            )}
-          </div>
-          <div className="download-row">
-            <button className="secondary-button" type="button" onClick={onResetDemo}>重置演示数据</button>
-            <button className="secondary-button" type="button" onClick={onDownload}>导出报表</button>
-          </div>
         </div>
       </div>
       <div className="table-surface">

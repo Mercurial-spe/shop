@@ -4,6 +4,10 @@ import './App.css';
 import { apiService, type CartItem, type ProductCategory, type RecommendationProduct, type User } from './services/api';
 import type { Product } from './types/Product';
 import { ProductDrawer } from './components/ProductDrawer';
+import { PaymentModal } from './components/PaymentModal';
+import { OrderDetailModal } from './components/OrderDetailModal';
+import { ProductEditModal } from './components/ProductEditModal';
+import { PasswordResetModal } from './components/PasswordResetModal';
 import { DEMO_CREDENTIALS, FALLBACK_PRODUCTS, emptyProductForm } from './data/storefront';
 import { PATH_VIEWS, VIEW_PATHS, viewForRole, viewFromPath } from './routes/views';
 import type {
@@ -13,6 +17,7 @@ import type {
   AnalyticsTrends,
   AuthForm,
   CustomerProfile,
+  LogSummary,
   LoginLog,
   LoginMode,
   Order,
@@ -63,10 +68,15 @@ function App() {
   const [anomaliesUpdatedAt, setAnomaliesUpdatedAt] = useState('');
   const [profiles, setProfiles] = useState<CustomerProfile[]>([]);
   const [logs, setLogs] = useState<LoginLog[]>([]);
+  const [logSummary, setLogSummary] = useState<LogSummary | null>(null);
   const [period, setPeriod] = useState<Period>('day');
   const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(true);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
+  const [payingOrder, setPayingOrder] = useState<Order | null>(null);
+  const [detailOrder, setDetailOrder] = useState<Order | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [resettingSeller, setResettingSeller] = useState<User | null>(null);
 
   const roleClass = user ? `role-${user.role.toLowerCase()}` : 'role-guest';
   const canShop = !user || user.role === 'CUSTOMER';
@@ -331,7 +341,7 @@ function App() {
 
   const loadAdminWorkspace = async (adminId: number, nextPeriod: Period) => {
     try {
-      const [sellerUsers, nextOverview, nextRankings, nextTrends, nextAnomalies, nextProfiles, loginLogs, operationLogs] =
+      const [sellerUsers, nextOverview, nextRankings, nextTrends, nextAnomalies, nextProfiles, loginLogs, operationLogs, summary] =
         await Promise.all([
           apiService.getSellers(adminId),
           apiService.getAnalyticsOverview(adminId),
@@ -341,6 +351,7 @@ function App() {
           apiService.getCustomerProfiles(adminId),
           apiService.getLoginLogs(adminId),
           apiService.getOperationLogs(adminId),
+          apiService.getLogSummary(adminId),
         ]);
       setSellers(sellerUsers);
       setOverview(nextOverview as AnalyticsOverview);
@@ -350,6 +361,7 @@ function App() {
       setAnomaliesUpdatedAt(new Date().toLocaleTimeString('zh-CN', { hour12: false }));
       setProfiles(nextProfiles as CustomerProfile[]);
       setLogs([...(loginLogs as LoginLog[]).slice(0, 5), ...(operationLogs as LoginLog[]).slice(0, 5)]);
+      setLogSummary(summary as LogSummary);
     } catch (error) {
       reportError(error, '管理台加载失败，请确认当前账号是管理员。');
     }
@@ -433,9 +445,10 @@ function App() {
       try {
         const order = (await apiService.purchaseProduct(product.id, user.id, 1)) as Order;
         await loadOrders(user.id);
-        await loadStorefront();
         setView('orders');
-        setNotice(`订单 #${order.id} 已创建，可继续完成模拟支付。`);
+        setSelectedProduct(null);
+        setPayingOrder(order);
+        setNotice(`订单 #${order.id} 已创建，请完成模拟支付。`);
       } catch (error) {
         reportError(error, '立即购买失败。');
       }
@@ -461,24 +474,33 @@ function App() {
     await runAction('checkout', async () => {
       try {
         const order = (await apiService.checkoutCart(user.id)) as Order;
-        await Promise.all([loadCart(user.id), loadOrders(user.id), loadStorefront()]);
+        await Promise.all([loadCart(user.id), loadOrders(user.id)]);
         setView('orders');
-        setNotice(`购物车已结算为订单 #${order.id}。`);
+        setPayingOrder(order);
+        setNotice(`购物车已结算为订单 #${order.id}，请完成模拟支付。`);
       } catch (error) {
         reportError(error, '结算失败。');
       }
     });
   };
 
-  const payOrder = async (orderId: number) => {
-    if (!user) {
+  // 顾客点击「去支付」：打开模拟支付弹窗选择支付方式
+  const openPayment = (order: Order) => {
+    setDetailOrder(null);
+    setPayingOrder(order);
+  };
+
+  const confirmPayment = async (method: string) => {
+    if (!user || !payingOrder) {
       return;
     }
+    const orderId = payingOrder.id;
     await runAction(`pay-${orderId}`, async () => {
       try {
-        await apiService.payOrder(orderId, user.id, 'Mercurial 模拟支付');
-        await loadOrders(user.id);
-        setNotice(`订单 #${orderId} 已支付，后端会发送邮件确认。`);
+        await apiService.payOrder(orderId, user.id, method);
+        await Promise.all([loadOrders(user.id), loadStorefront()]);
+        setPayingOrder(null);
+        setNotice(`订单 #${orderId} 已通过${method}支付，后端会发送邮件确认。`);
       } catch (error) {
         reportError(error, '支付失败。');
       }
@@ -507,22 +529,21 @@ function App() {
     }
   };
 
-  const updateSellerProduct = async (product: Product, field: 'price' | 'stockQuantity') => {
-    if (!user || user.role !== 'SELLER') {
+  const saveProductEdit = async (updates: Partial<Product>) => {
+    if (!user || user.role !== 'SELLER' || !editingProduct) {
       return;
     }
-    const label = field === 'price' ? '价格' : '库存';
-    const nextValue = window.prompt(`输入新的${label}`, String(product[field] ?? ''));
-    if (nextValue === null) {
-      return;
-    }
-    try {
-      await apiService.updateProduct(product.id, user.id, { ...product, [field]: Number(nextValue) });
-      await Promise.all([loadSellerWorkspace(user.id), loadStorefront()]);
-      setNotice(`${product.name} 的${label}已更新。`);
-    } catch (error) {
-      reportError(error, '商品更新失败。');
-    }
+    const target = editingProduct;
+    await runAction(`edit-${target.id}`, async () => {
+      try {
+        await apiService.updateProduct(target.id, user.id, { ...target, ...updates });
+        await Promise.all([loadSellerWorkspace(user.id), loadStorefront()]);
+        setEditingProduct(null);
+        setNotice(`${updates.name ?? target.name} 已更新。`);
+      } catch (error) {
+        reportError(error, '商品更新失败。');
+      }
+    });
   };
 
   const deleteSellerProduct = async (product: Product) => {
@@ -576,20 +597,20 @@ function App() {
     }
   };
 
-  const resetSellerPassword = async (sellerId: number) => {
-    if (!user || user.role !== 'ADMIN') {
+  const confirmResetPassword = async (password: string) => {
+    if (!user || user.role !== 'ADMIN' || !resettingSeller) {
       return;
     }
-    const password = window.prompt('输入新的销售人员密码', 'seller123');
-    if (!password) {
-      return;
-    }
-    try {
-      await apiService.resetSellerPassword(user.id, sellerId, password);
-      setNotice('销售人员密码已重置。');
-    } catch (error) {
-      reportError(error, '密码重置失败。');
-    }
+    const sellerId = resettingSeller.id;
+    await runAction(`reset-${sellerId}`, async () => {
+      try {
+        await apiService.resetSellerPassword(user.id, sellerId, password);
+        setResettingSeller(null);
+        setNotice(`${resettingSeller.username} 的密码已重置。`);
+      } catch (error) {
+        reportError(error, '密码重置失败。');
+      }
+    });
   };
 
   const deleteSeller = async (sellerId: number) => {
@@ -814,7 +835,14 @@ function App() {
 
           {view === 'cart' && <CartView actionBusy={actionBusy} cart={cart} onCheckout={() => void checkout()} onRemove={(id) => void removeCartItem(id)} />}
 
-          {view === 'orders' && <OrdersView actionBusy={actionBusy} orders={orders} onPay={(id) => void payOrder(id)} />}
+          {view === 'orders' && (
+            <OrdersView
+              actionBusy={actionBusy}
+              orders={orders}
+              onPay={(order) => openPayment(order)}
+              onDetail={(order) => setDetailOrder(order)}
+            />
+          )}
 
           {view === 'seller' && (
             <SellerView
@@ -832,7 +860,7 @@ function App() {
               onDownloadOrders={() => user && void apiService.downloadSellerOrdersReport(user.id)}
               onDownloadProducts={() => user && void apiService.downloadSellerProductsReport(user.id)}
               onForm={setProductForm}
-              onUpdateProduct={(product, field) => void updateSellerProduct(product, field)}
+              onEditProduct={(product) => setEditingProduct(product)}
             />
           )}
 
@@ -842,6 +870,7 @@ function App() {
               anomaliesUpdatedAt={anomaliesUpdatedAt}
               form={sellerForm}
               logs={logs}
+              logSummary={logSummary}
               overview={overview}
               period={period}
               profiles={profiles}
@@ -854,7 +883,12 @@ function App() {
               onForm={setSellerForm}
               onPeriod={setPeriod}
               onResetDemo={() => void resetDemoData()}
-              onResetPassword={(id) => void resetSellerPassword(id)}
+              onResetPassword={(id) => {
+                const target = sellers.find((seller) => seller.id === id);
+                if (target) {
+                  setResettingSeller(target);
+                }
+              }}
             />
           )}
         </div>
@@ -868,6 +902,43 @@ function App() {
           onAdd={addToCart}
           onBuy={buyNow}
           onClose={() => setSelectedProduct(null)}
+        />
+      )}
+
+      {payingOrder && (
+        <PaymentModal
+          order={payingOrder}
+          busy={actionBusy === `pay-${payingOrder.id}`}
+          onClose={() => setPayingOrder(null)}
+          onConfirm={(method) => void confirmPayment(method)}
+        />
+      )}
+
+      {detailOrder && (
+        <OrderDetailModal
+          order={detailOrder}
+          busy={actionBusy === `pay-${detailOrder.id}`}
+          onClose={() => setDetailOrder(null)}
+          onPay={(order) => openPayment(order)}
+        />
+      )}
+
+      {editingProduct && (
+        <ProductEditModal
+          product={editingProduct}
+          categories={categoryOptions.filter((item) => item !== '全部')}
+          busy={actionBusy === `edit-${editingProduct.id}`}
+          onClose={() => setEditingProduct(null)}
+          onSave={(updates) => void saveProductEdit(updates)}
+        />
+      )}
+
+      {resettingSeller && (
+        <PasswordResetModal
+          seller={resettingSeller}
+          busy={actionBusy === `reset-${resettingSeller.id}`}
+          onClose={() => setResettingSeller(null)}
+          onConfirm={(password) => void confirmResetPassword(password)}
         />
       )}
     </main>

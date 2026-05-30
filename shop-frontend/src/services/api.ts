@@ -262,6 +262,10 @@ class ApiService {
     return this.request<unknown[]>(`/logs/operation?adminId=${adminId}`);
   }
 
+  async getLogSummary(adminId: number): Promise<Record<string, number>> {
+    return this.request<Record<string, number>>(`/logs/summary?adminId=${adminId}`);
+  }
+
   async resetDemoData(adminId: number): Promise<Record<string, number>> {
     return this.request<Record<string, number>>('/admin/demo/reset', {
       method: 'POST',

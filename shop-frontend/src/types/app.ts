@@ -41,6 +41,11 @@ export interface Order {
   id: number;
   status: string;
   createdAt?: string;
+  paymentMethod?: string;
+  paymentNo?: string;
+  paidAt?: string;
+  shippedAt?: string;
+  receivedAt?: string;
   items?: OrderItem[];
 }
 
@@ -78,8 +83,18 @@ export interface Forecast {
   last7DaysRevenue?: number;
   previous7DaysRevenue?: number;
   growthRate?: number;
+  dailySlope?: number;
+  rSquared?: number;
+  movingAverageNext7DaysRevenue?: number;
   predictedNext7DaysRevenue?: number;
   method?: string;
+}
+
+export interface LogSummary {
+  loginCount?: number;
+  browseCount?: number;
+  purchaseCount?: number;
+  operationCount?: number;
 }
 
 export interface StatusBreakdownItem {

@@ -1581,6 +1581,52 @@ textarea:focus {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.analytics-grid.single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* 数据采集总量看板 */
+.data-collection-board {
+  margin-top: 18px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 18px;
+  background: var(--paper);
+}
+
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.collection-tile {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 14px;
+  background: color-mix(in srgb, var(--role-soft) 40%, #fff 60%);
+}
+
+.collection-tile span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.collection-tile strong {
+  font-size: 28px;
+  color: var(--coral-dark);
+}
+
+.chart-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .list-stack {
   display: grid;
   gap: 12px;
@@ -2677,3 +2723,220 @@ tr:last-child td {
     transition: none;
   }
 }
+
+/* ===== 通用居中弹窗系统 ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(23 22 20 / 48%);
+  backdrop-filter: blur(2px);
+}
+
+.modal-panel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 14px;
+  width: min(440px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 26px;
+  border-radius: 16px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  animation: modal-rise 0.18s ease-out;
+}
+
+@keyframes modal-rise {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-panel h2 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+.modal-panel label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--body);
+}
+
+.modal-panel input,
+.modal-panel textarea {
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  font: inherit;
+  color: var(--ink);
+}
+
+.modal-panel textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+
+.modal-panel .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* 模拟支付弹窗 */
+.payment-amount {
+  display: grid;
+  gap: 4px;
+  border-radius: 12px;
+  padding: 16px;
+  background: color-mix(in srgb, var(--role-soft) 60%, #fff 40%);
+}
+
+.payment-amount small {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.payment-amount strong {
+  font-size: 34px;
+  color: var(--coral-dark);
+}
+
+.payment-methods {
+  display: grid;
+  gap: 10px;
+}
+
+.payment-method {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  border: 1.5px solid var(--hairline);
+  border-radius: 12px;
+  padding: 14px 44px 14px 16px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.payment-method .payment-method-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.payment-method small {
+  color: var(--muted);
+}
+
+.payment-method .payment-radio {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  border: 2px solid var(--hairline);
+  border-radius: 50%;
+}
+
+.payment-method.active {
+  border-color: var(--coral);
+  background: color-mix(in srgb, var(--role-soft) 50%, #fff 50%);
+}
+
+.payment-method.active .payment-radio {
+  border-color: var(--coral);
+  background:
+    radial-gradient(circle at center, var(--coral) 0 5px, transparent 6px);
+}
+
+.payment-method.alipay.active { border-color: #1677ff; }
+.payment-method.wechat.active { border-color: #07c160; }
+.payment-method.bank.active { border-color: #d99b45; }
+
+.payment-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* 订单详情弹窗 */
+.order-detail-items {
+  display: grid;
+  gap: 8px;
+}
+
+.order-detail-items article {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.order-detail-items small {
+  color: var(--muted);
+}
+
+.order-detail-meta {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.order-detail-meta > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.order-detail-meta > div:last-child {
+  border-bottom: 0;
+}
+
+.order-detail-meta dt {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.order-detail-meta dd {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 700;
+  text-align: right;
+  word-break: break-all;
+}
+
+.reset-target {
+  margin: 0;
+  color: var(--body);
+}
+
+/* 订单状态色彩 */
+.status-pill.status-pending_payment { background: #fff1d7; color: #8a5a12; }
+.status-pill.status-paid { background: #e8f4ef; color: #2f6f67; }
+.status-pill.status-shipped { background: #e6efff; color: #2a55b0; }
+.status-pill.status-received { background: #eef0e6; color: #5a6a2f; }

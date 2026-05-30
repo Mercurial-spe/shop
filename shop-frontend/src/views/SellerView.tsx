@@ -2,7 +2,7 @@ import type { ProductCategory } from '../services/api';
 import type { Product } from '../types/Product';
 import type { ProductForm, SellerOrderItem, SellerStats } from '../types/app';
 import { MetricCard } from '../components/AnalyticsWidgets';
-import { formatMoney } from '../utils/format';
+import { formatMoney, orderStatusLabel } from '../utils/format';
 
 export function SellerView({
   categories,
@@ -19,7 +19,7 @@ export function SellerView({
   onDownloadOrders,
   onDownloadProducts,
   onForm,
-  onUpdateProduct,
+  onEditProduct,
 }: {
   categories: ProductCategory[];
   categoryName: string;
@@ -35,7 +35,7 @@ export function SellerView({
   onDownloadOrders: () => void;
   onDownloadProducts: () => void;
   onForm: (value: ProductForm) => void;
-  onUpdateProduct: (product: Product, field: 'price' | 'stockQuantity') => void;
+  onEditProduct: (product: Product) => void;
 }) {
   return (
     <section className="content-block">
@@ -101,8 +101,7 @@ export function SellerView({
                 <td>{product.stockQuantity}</td>
                 <td>
                   <div className="table-actions">
-                    <button className="ghost-button" type="button" onClick={() => onUpdateProduct(product, 'price')}>调价</button>
-                    <button className="ghost-button" type="button" onClick={() => onUpdateProduct(product, 'stockQuantity')}>库存</button>
+                    <button className="ghost-button" type="button" onClick={() => onEditProduct(product)}>编辑</button>
                     <button className="danger-button" type="button" onClick={() => onDeleteProduct(product)}>下架</button>
                   </div>
                 </td>
@@ -131,7 +130,7 @@ export function SellerView({
                 <td>{item.productName}</td>
                 <td>{item.quantity}</td>
                 <td>{formatMoney(item.price * item.quantity)}</td>
-                <td><span className="status-pill">{item.orderStatus}</span></td>
+                <td><span className={`status-pill status-${(item.orderStatus ?? '').toLowerCase()}`}>{orderStatusLabel(item.orderStatus)}</span></td>
               </tr>
             ))}
           </tbody>
