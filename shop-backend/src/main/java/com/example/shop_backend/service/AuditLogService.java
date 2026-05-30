@@ -115,6 +115,22 @@ public class AuditLogService {
         return summary;
     }
 
+    /** 销售人员只能看自己商品被浏览的日志。 */
+    public List<BrowseLog> browseLogsForProducts(java.util.Collection<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return List.of();
+        }
+        return browseLogRepository.findTop100ByProductIdInOrderByCreatedAtDesc(productIds);
+    }
+
+    /** 销售人员只能看自己商品被购买的日志。 */
+    public List<PurchaseLog> purchaseLogsForProducts(java.util.Collection<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return List.of();
+        }
+        return purchaseLogRepository.findTop100ByProductIdInOrderByPurchasedAtDesc(productIds);
+    }
+
     private String categoryOf(Product product) {
         if (product.getCategory() == null || product.getCategory().isBlank()) {
             return "未分类";

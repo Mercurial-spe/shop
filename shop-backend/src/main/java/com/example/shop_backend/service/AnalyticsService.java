@@ -51,6 +51,9 @@ public class AnalyticsService {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private RateLimitService rateLimitService;
+
     public Map<String, Object> overview(Long adminId) {
         accessControlService.requireAdmin(adminId);
         List<PurchaseLog> purchases = purchaseLogRepository.findAll();
@@ -163,12 +166,14 @@ public class AnalyticsService {
         List<Map<String, Object>> salesSpike = detectSalesSpike(purchases, today);
         List<Map<String, Object>> highBrowseLowPurchase = detectHighBrowseLowPurchase(products, browses, purchases);
         List<Map<String, Object>> suspiciousBrowse = detectSuspiciousBrowse(browses, today);
+        List<Map<String, Object>> rateLimited = detectRateLimited();
 
         List<Map<String, Object>> all = new ArrayList<>();
         all.addAll(lowStock);
         all.addAll(salesSpike);
         all.addAll(highBrowseLowPurchase);
         all.addAll(suspiciousBrowse);
+        all.addAll(rateLimited);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("total", all.size());
@@ -176,8 +181,25 @@ public class AnalyticsService {
         result.put("salesSpike", salesSpike);
         result.put("highBrowseLowPurchase", highBrowseLowPurchase);
         result.put("suspiciousBrowse", suspiciousBrowse);
+        result.put("rateLimited", rateLimited);
         result.put("all", all);
         return result;
+    }
+
+    /** 反爬虫限流命中：把被限流封禁的 IP 作为异常项展示。 */
+    private List<Map<String, Object>> detectRateLimited() {
+        return rateLimitService.recentBlocks(10).stream()
+                .map(block -> {
+                    Map<String, Object> alert = new LinkedHashMap<>();
+                    alert.put("type", "RATE_LIMITED");
+                    alert.put("title", "反爬虫拦截");
+                    alert.put("ipAddress", block.get("ipAddress"));
+                    alert.put("browseCount", block.get("blockedCount"));
+                    boolean active = Boolean.TRUE.equals(block.get("active"));
+                    alert.put("message", active ? "该 IP 请求过于频繁，正在被限流封禁。" : "该 IP 曾触发反爬虫限流。");
+                    return alert;
+                })
+                .collect(Collectors.toList());
     }
 
     public List<Map<String, Object>> customerProfiles(Long adminId) {
