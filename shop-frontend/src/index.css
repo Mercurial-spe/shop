@@ -6,14 +6,16 @@
 
 html {
   min-width: 320px;
-  background: #faf7ef;
+  background: #faf9f5;
   scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
   font-family:
-    "Avenir Next",
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
     "Segoe UI",
     "Microsoft YaHei UI",
     "Microsoft YaHei",
@@ -23,6 +25,6 @@ body {
 }
 
 ::selection {
-  background: #c86f51;
-  color: #fffdf7;
+  background: #cc785c;
+  color: #faf9f5;
 }

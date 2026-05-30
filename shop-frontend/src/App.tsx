@@ -736,7 +736,7 @@ function App() {
             </div>
             <div className="hot-links" aria-label="热门类目">
               {categoryOptions.filter((item) => item !== '全部').slice(0, 6).map((item) => (
-                <button key={item} type="button" onClick={() => { setCategory(item); setQuery(''); }}>
+                <button className={category === item ? 'active' : ''} key={item} type="button" onClick={() => { setCategory(item); setQuery(''); }}>
                   {item}
                 </button>
               ))}

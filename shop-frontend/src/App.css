@@ -9,47 +9,48 @@
 }
 
 :root {
-  --canvas: #faf7ef;
-  --paper: #fffdf7;
-  --paper-deep: #efe7d7;
-  --ink: #171614;
-  --body: #49443c;
-  --muted: #787064;
-  --hairline: #ded2bf;
-  --coral: #c86f51;
-  --coral-dark: #9f4f37;
+  --display: "Cormorant Garamond", "Times New Roman", "Songti SC", "STSong", serif;
+  --canvas: #faf9f5;
+  --paper: #fffefb;
+  --paper-deep: #efe9de;
+  --ink: #141413;
+  --body: #3d3d3a;
+  --muted: #6c6a64;
+  --hairline: #e6dfd8;
+  --coral: #cc785c;
+  --coral-dark: #a9583e;
   --olive: #77815c;
-  --teal: #4e9a8d;
-  --amber: #d99b45;
-  --danger: #b54b43;
-  --dark: #181714;
-  --dark-soft: #25231f;
+  --teal: #5db8a6;
+  --amber: #e8a55a;
+  --danger: #c64545;
+  --dark: #181715;
+  --dark-soft: #252320;
   --dark-line: #38342d;
-  --cream-on-dark: #f7f2e7;
-  --shadow: 0 24px 80px rgb(30 25 17 / 14%);
+  --cream-on-dark: #faf9f5;
+  --shadow: 0 24px 80px rgb(20 20 19 / 12%);
   --market-gutter: clamp(12px, 1.4vw, 28px);
   --grid-line: rgb(120 129 92 / 8%);
-  --shell-glow: rgb(200 111 81 / 14%);
-  --shell-a: #fbf8f0;
-  --shell-b: #f5eee1;
-  --shell-c: #fffdf7;
-  --topbar-bg: rgb(250 247 239 / 86%);
+  --shell-glow: rgb(204 120 92 / 14%);
+  --shell-a: #fbf9f3;
+  --shell-b: #f5f0e8;
+  --shell-c: #fffefb;
+  --topbar-bg: rgb(250 249 245 / 86%);
   color: var(--ink);
   background: var(--canvas);
 }
 
 .role-guest,
 .role-customer {
-  --coral: #c86f51;
-  --coral-dark: #9f4f37;
-  --role-soft: #fff3e6;
+  --coral: #cc785c;
+  --coral-dark: #a9583e;
+  --role-soft: #f5ede4;
   --role-line: #e2b9a3;
-  --grid-line: rgb(200 111 81 / 9%);
-  --shell-glow: rgb(200 111 81 / 16%);
-  --shell-a: #fbf8f0;
-  --shell-b: #f6ece0;
-  --shell-c: #fffdf7;
-  --topbar-bg: rgb(252 247 238 / 88%);
+  --grid-line: rgb(204 120 92 / 9%);
+  --shell-glow: rgb(204 120 92 / 16%);
+  --shell-a: #fbf9f3;
+  --shell-b: #f5efe6;
+  --shell-c: #fffefb;
+  --topbar-bg: rgb(250 249 245 / 88%);
 }
 
 .role-seller {
@@ -340,9 +341,9 @@ button:disabled {
 .section-heading h2,
 .drawer-panel h2 {
   margin: 0;
-  font-family: Chandia, "STSong", "Songti SC", serif;
-  font-weight: 400;
-  letter-spacing: 0;
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .hero-copy h1 {
@@ -631,6 +632,21 @@ select:focus-visible {
   transform: translateY(-1px);
 }
 
+.hot-links button.active,
+.channel-row button.active {
+  border-color: var(--coral);
+  background: var(--coral);
+  color: #fff;
+  box-shadow: 0 8px 20px rgb(204 120 92 / 28%);
+}
+
+.hot-links button.active:hover,
+.channel-row button.active:hover {
+  border-color: var(--coral-dark);
+  background: var(--coral-dark);
+  color: #fff;
+}
+
 .market-promise {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -833,7 +849,7 @@ textarea:focus {
 .login-hero h1 {
   max-width: 720px;
   margin: 0;
-  font-family: Chandia, "STSong", "Songti SC", serif;
+  font-family: var(--display);
   font-size: clamp(46px, 7vw, 84px);
   font-weight: 400;
   line-height: 0.98;
@@ -1014,10 +1030,11 @@ textarea:focus {
 .market-hero h2 {
   max-width: 620px;
   margin: 8px 0 8px;
-  font-family: Chandia, "STSong", "Songti SC", serif;
+  font-family: var(--display);
   font-size: clamp(28px, 3.4vw, 44px);
-  font-weight: 400;
-  line-height: 1.0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
 }
 
 .market-hero p {
@@ -1093,9 +1110,10 @@ textarea:focus {
 }
 
 .market-section-title h2 {
-  font-family: Chandia, "STSong", "Songti SC", serif;
+  font-family: var(--display);
   font-size: 30px;
-  font-weight: 400;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .market-product-grid {
@@ -1361,7 +1379,7 @@ textarea:focus {
 }
 
 .recommend-heading span {
-  font-family: Chandia, "STSong", "Songti SC", serif;
+  font-family: var(--display);
   font-size: 25px;
   line-height: 1;
 }
@@ -1507,7 +1525,7 @@ textarea:focus {
   border: 1px solid var(--ink);
   background: #fffaf0;
   color: var(--coral-dark);
-  font-family: Chandia, "STSong", serif;
+  font-family: var(--display);
   font-size: 24px;
   box-shadow: 6px 6px 0 rgb(23 22 20 / 88%);
 }
@@ -2107,7 +2125,7 @@ tr:last-child td {
   border: 1px solid var(--ink);
   background: color-mix(in srgb, var(--profile-accent) 18%, #fffaf0);
   color: var(--coral-dark);
-  font-family: Chandia, "STSong", serif;
+  font-family: var(--display);
   font-weight: 800;
   box-shadow: 4px 4px 0 rgb(23 22 20 / 86%);
 }
