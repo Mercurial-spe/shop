@@ -4,6 +4,7 @@
 #   ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 # 或者通过环境变量覆盖（见 application.properties 的 SMTP_USER / SMTP_PASS）。
 
+app.mail.enabled=false
 spring.mail.host=smtp.qq.com
 spring.mail.port=465
 spring.mail.username=你的邮箱@qq.com

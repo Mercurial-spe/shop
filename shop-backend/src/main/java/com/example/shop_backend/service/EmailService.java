@@ -14,10 +14,23 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Value("${app.mail.enabled:false}")
+    private boolean mailEnabled;
+
     @Value("${spring.mail.username}")
     private String fromEmail;
 
     public void sendOrderConfirmation(Order order) {
+        if (!mailEnabled) {
+            System.out.println("邮件服务未启用，跳过订单邮件通知");
+            return;
+        }
+
+        if (fromEmail == null || fromEmail.isBlank()) {
+            System.out.println("邮件发送跳过：SMTP_USER 未配置");
+            return;
+        }
+
         if (order.getUser() == null || order.getUser().getEmail() == null) {
             System.out.println("邮件发送失败：用户邮箱为空");
             return;

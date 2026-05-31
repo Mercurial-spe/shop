@@ -70,10 +70,13 @@ web_application/
 
 ## 快速启动
 
-使用 Docker Compose 启动完整环境：
+使用 Docker Compose 启动完整环境。第一次运行前先复制环境变量模板，并修改数据库密码：
 
 ```bash
-docker compose up --build
+cp .env.example .env
+nano .env
+docker compose up --build -d
+docker compose ps
 ```
 
 默认服务地址：
@@ -84,25 +87,23 @@ docker compose up --build
 | 后端 | <http://localhost:8080> |
 | MySQL | `localhost:3306` |
 
-Docker Compose 支持通过环境变量覆盖默认配置：
+`.env` 中的数据库账号和密码由 MySQL 容器首次初始化时创建：
 
-```bash
-MYSQL_DATABASE=shop_db \
-MYSQL_USER=shop_user \
-MYSQL_PASSWORD=shop_pass \
-MYSQL_ROOT_PASSWORD=root \
-FRONTEND_PORT=5173 \
-docker compose up --build
+```env
+MYSQL_DATABASE=shop_db
+MYSQL_USER=shop_user
+MYSQL_PASSWORD=change-me-shop-pass
+MYSQL_ROOT_PASSWORD=change-me-root-pass
 ```
 
-如需启用订单邮件通知，在启动前设置 SMTP 环境变量：
+订单邮件通知默认关闭，不影响下单流程。如需启用，在 `.env` 中设置：
 
-```bash
-export SMTP_HOST=smtp.qq.com
-export SMTP_PORT=465
-export SMTP_USER=your-email@example.com
-export SMTP_PASS=your-smtp-token
-docker compose up --build
+```env
+APP_MAIL_ENABLED=true
+SMTP_HOST=smtp.qq.com
+SMTP_PORT=465
+SMTP_USER=your-email@example.com
+SMTP_PASS=your-smtp-token
 ```
 
 ## 本地开发
@@ -166,13 +167,26 @@ Docker Compose
 
 - 域名已解析到服务器。
 - Docker 与 Docker Compose 可用。
-- 数据库密码、SMTP 账号等敏感配置通过环境变量或服务器本地 `.env` 注入。
+- 数据库密码、SMTP 账号等敏感配置通过服务器本地 `.env` 注入。
 - `/api/` 正确反向代理到后端服务。
 
-推荐部署命令：
+推荐部署流程：
 
 ```bash
+git pull
+cp .env.example .env
+nano .env
+docker compose config
 docker compose up --build -d
+docker compose ps
+```
+
+后续更新代码时无需覆盖已有 `.env`，直接拉取并重建：
+
+```bash
+git pull
+docker compose up --build -d
+docker compose ps
 ```
 
 常用 Docker 变量：
@@ -184,14 +198,22 @@ docker compose up --build -d
 | `MYSQL_PASSWORD` | `shop_pass` | 应用数据库密码 |
 | `MYSQL_ROOT_PASSWORD` | `root` | MySQL root 密码 |
 | `FRONTEND_PORT` | `5173` | 前端容器映射到宿主机的端口 |
-| `SMTP_USER` / `SMTP_PASS` | 空 | 订单邮件账号和授权码 |
+| `APP_MAIL_ENABLED` | `false` | 是否启用订单邮件通知 |
+| `SMTP_HOST` / `SMTP_PORT` | `smtp.qq.com` / `465` | SMTP 服务地址和端口 |
+| `SMTP_USER` / `SMTP_PASS` | 空 | 订单邮件账号和授权码，关闭邮件时可留空 |
 
-示例：
+示例 `.env`：
 
-```bash
-MYSQL_PASSWORD='更安全的数据库密码' \
-MYSQL_ROOT_PASSWORD='更安全的root密码' \
-SMTP_USER='your-email@example.com' \
-SMTP_PASS='your-smtp-token' \
-docker compose up --build -d
+```env
+MYSQL_DATABASE=shop_db
+MYSQL_USER=shop_user
+MYSQL_PASSWORD=replace-with-a-strong-password
+MYSQL_ROOT_PASSWORD=replace-with-a-strong-root-password
+FRONTEND_PORT=5173
+
+APP_MAIL_ENABLED=false
+SMTP_HOST=smtp.qq.com
+SMTP_PORT=465
+SMTP_USER=
+SMTP_PASS=
 ```

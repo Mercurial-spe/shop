@@ -27,6 +27,7 @@ services:
       DB_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE:-shop_db}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       DB_USER: ${MYSQL_USER:-shop_user}
       DB_PASSWORD: ${MYSQL_PASSWORD:-shop_pass}
+      APP_MAIL_ENABLED: ${APP_MAIL_ENABLED:-false}
       SMTP_HOST: ${SMTP_HOST:-smtp.qq.com}
       SMTP_PORT: ${SMTP_PORT:-465}
       SMTP_USER: ${SMTP_USER:-}
