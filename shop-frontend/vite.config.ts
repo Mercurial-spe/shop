@@ -17,10 +17,6 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
-      '/100191209_p0.jpg': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
     },
   },
 })

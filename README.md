@@ -5,7 +5,7 @@
 
 [![Stack](https://skillicons.dev/icons?i=react,typescript,java,spring,mysql,nginx,docker,ubuntu&perline=9)](https://skillicons.dev)
 
-Mercurial's Shop 是一个完整的电商演示系统，覆盖顾客购物、销售管理、平台运营、数据分析和线上部署。项目采用前后端分离架构：前端由 React + TypeScript + Vite 构建，后端基于 Spring Boot + Spring Data JPA，数据持久化使用 MySQL，并提供 Docker Compose 与 Nginx 生产部署路径。
+Mercurial's Shop 是一个完整的电商演示系统，覆盖顾客购物、销售管理、平台运营、数据分析和线上部署。项目采用前后端分离架构：前端由 React + TypeScript + Vite 构建，后端基于 Spring Boot + Spring Data JPA，数据持久化使用 MySQL，并以 Docker Compose 作为唯一推荐的运行与部署入口。
 
 **线上部署地址：** <https://www.mercuria1.top/>
 
@@ -27,7 +27,7 @@ Mercurial's Shop 是一个完整的电商演示系统，覆盖顾客购物、销
 - 审计日志：记录登录、浏览、购买和关键后台操作，便于验收和问题追踪。
 - 反爬与异常识别：后端包含访问频率限制、IP 解析和异常数据聚合。
 - 邮件通知：支持 SMTP 订单邮件通知，可通过环境变量配置。
-- 生产部署：支持 Ubuntu + Nginx + HTTPS + Spring Boot Jar + React 静态资源部署。
+- 生产部署：推荐使用 Docker Compose 编排 MySQL、Spring Boot 后端和 Nginx 前端容器。
 
 ## 技术栈
 
@@ -62,8 +62,7 @@ web_application/
 │  ├─ src/services/           # API 请求封装
 │  ├─ src/routes/             # 前端路由
 │  └─ package.json
-├─ deploy/nginx/              # Nginx 站点配置
-├─ scripts/                   # 本地环境、数据导入和开发脚本
+├─ deploy/nginx/              # 服务器 Nginx 站点配置参考
 ├─ images/                    # README 展示图片
 ├─ docker-compose.yml
 └─ README.md
@@ -108,6 +107,8 @@ docker compose up --build
 
 ## 本地开发
 
+推荐直接使用 Docker Compose 启动完整环境。需要单独开发前端或后端时，再使用本机 Node.js、Java 与 MySQL。
+
 环境要求：
 
 | 工具 | 版本建议 |
@@ -116,14 +117,6 @@ docker compose up --build
 | Java | 21+ |
 | Maven | 使用后端目录内的 `mvnw` |
 | MySQL | 8+ |
-
-初始化 WSL/Linux 本地环境：
-
-```bash
-./scripts/install-wsl-tools.sh
-./scripts/setup-local-mysql.sh
-./scripts/check-dev-env.sh --build
-```
 
 启动后端：
 
@@ -158,63 +151,47 @@ npm run dev
 | 销售 | `seller01` | `seller123` | 管理商品、分类、库存、订单和 CSV 报表 |
 | 顾客 | `customer01` | `customer123` | 浏览商品、购物车、下单、支付和推荐 |
 
-## 常用脚本
-
-| 命令 | 说明 |
-| --- | --- |
-| `./scripts/dev-up.sh` | 本地同时启动前后端开发服务 |
-| `./scripts/check-dev-env.sh --build` | 检查开发环境并尝试构建 |
-| `./scripts/setup-local-mysql.sh` | 初始化本地 MySQL 数据库 |
-| `./scripts/generate-products-csv.py` | 生成商品 CSV 导入样例 |
-
 ## 生产部署说明
 
 推荐线上部署结构：
 
 ```text
-Nginx
-├─ /              -> React build 静态文件
-├─ /api/          -> Spring Boot 后端 8080
-└─ 商品图片路径    -> 后端静态资源代理
-
-Spring Boot Jar -> MySQL 8
-HTTPS           -> Let's Encrypt
+Docker Compose
+├─ frontend      -> Nginx 托管 React build，并反向代理 /api/
+├─ backend       -> Spring Boot API
+└─ db            -> MySQL 8
 ```
 
-Nginx 配置位于 `deploy/nginx/mercurial-shop.conf`。部署时需要确认：
+容器内前端 Nginx 配置位于 `shop-frontend/nginx.conf`。服务器外层 HTTPS 反代可参考 `deploy/nginx/mercurial-shop.conf`。部署时需要确认：
 
 - 域名已解析到服务器。
-- 后端数据库连接、SMTP 账号等敏感配置通过环境变量或服务器本地配置注入。
-- 前端生产构建输出由 Nginx 托管。
-- `/api/` 和商品图片路径正确反向代理到后端服务。
+- Docker 与 Docker Compose 可用。
+- 数据库密码、SMTP 账号等敏感配置通过环境变量或服务器本地 `.env` 注入。
+- `/api/` 正确反向代理到后端服务。
 
-干净 Ubuntu 服务器可按下面顺序复现部署：
+推荐部署命令：
 
 ```bash
-./scripts/install-ubuntu-server.sh
-./scripts/deploy-ubuntu-server.sh
+docker compose up --build -d
 ```
 
-`install-ubuntu-server.sh` 会安装 Java 21、Node.js 20、MySQL、Nginx、rsync 和可选 Certbot，并创建默认数据库账号。`deploy-ubuntu-server.sh` 会构建后端 Jar、构建前端静态文件、写入 systemd 服务、安装 Nginx 站点配置并重启服务。
-
-常用部署变量：
+常用 Docker 变量：
 
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
-| `DB_NAME` | `shop_db` | MySQL 数据库名 |
-| `DB_USER` | `shop_user` | 应用数据库用户 |
-| `DB_PASSWORD` | `shop_pass` | 应用数据库密码 |
-| `DB_HOST` | `127.0.0.1` | 后端连接的数据库地址 |
-| `DB_PORT` | `3306` | 后端连接的数据库端口 |
-| `APP_DIR` | `/opt/mercurial-shop` | 后端 Jar 安装目录 |
-| `WEB_ROOT` | `/var/www/mercurial-shop` | 前端静态文件目录 |
+| `MYSQL_DATABASE` | `shop_db` | MySQL 数据库名 |
+| `MYSQL_USER` | `shop_user` | 应用数据库用户 |
+| `MYSQL_PASSWORD` | `shop_pass` | 应用数据库密码 |
+| `MYSQL_ROOT_PASSWORD` | `root` | MySQL root 密码 |
+| `FRONTEND_PORT` | `5173` | 前端容器映射到宿主机的端口 |
 | `SMTP_USER` / `SMTP_PASS` | 空 | 订单邮件账号和授权码 |
 
 示例：
 
 ```bash
-DB_PASSWORD='更安全的数据库密码' \
+MYSQL_PASSWORD='更安全的数据库密码' \
+MYSQL_ROOT_PASSWORD='更安全的root密码' \
 SMTP_USER='your-email@example.com' \
 SMTP_PASS='your-smtp-token' \
-./scripts/deploy-ubuntu-server.sh
+docker compose up --build -d
 ```

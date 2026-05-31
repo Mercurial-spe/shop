@@ -88,7 +88,7 @@ export function SellerView({
               ))}
             </datalist>
           </label>
-          <label>图片链接<input placeholder="/100191209_p0.jpg" value={form.imageUrl} onChange={(event) => onForm({ ...form, imageUrl: event.target.value })} /></label>
+          <label>图片链接<input placeholder="https://images.unsplash.com/..." value={form.imageUrl} onChange={(event) => onForm({ ...form, imageUrl: event.target.value })} /></label>
           <button className="primary-button full" type="button" disabled={!canPublish} onClick={onCreateProduct}>发布商品</button>
         </div>
 

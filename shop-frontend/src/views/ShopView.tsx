@@ -80,7 +80,7 @@ export function ShopView({
         <div className="market-hero">
           <div className="market-hero-copy">
             <span className="category-pill">今日主会场</span>
-            <h2>数码好物集中逛，像淘宝一样先买起来。</h2>
+            <h2>mercurial's shop</h2>
             <p>搜索、类目、推荐、低库存、热卖商品放在同一个商城动线里，后台再承接数据分析。</p>
             <div className="hero-actions">
               <button className="primary-button" type="button" onClick={() => leadProduct && onInspect(leadProduct)}>

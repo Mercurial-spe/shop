@@ -12,6 +12,12 @@ import java.util.*;
 @Service
 public class DemoDataService {
 
+    private static final String DEFAULT_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80";
+    private static final String PHONE_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?auto=format&fit=crop&w=900&q=80";
+    private static final String LAPTOP_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=900&q=80";
+    private static final String ACCESSORY_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=900&q=80";
+    private static final String WEARABLE_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80";
+
     @Autowired
     private AccessControlService accessControlService;
 
@@ -133,8 +139,24 @@ public class DemoDataService {
         product.setPrice(price);
         product.setStockQuantity(stock);
         product.setCategory(category);
-        product.setImageUrl("/100191209_p0.jpg");
+        product.setImageUrl(defaultProductImage(category));
         return productRepository.save(product);
+    }
+
+    private String defaultProductImage(String category) {
+        if ("手机数码".equals(category)) {
+            return PHONE_PRODUCT_IMAGE;
+        }
+        if ("电脑办公".equals(category)) {
+            return LAPTOP_PRODUCT_IMAGE;
+        }
+        if ("智能穿戴".equals(category)) {
+            return WEARABLE_PRODUCT_IMAGE;
+        }
+        if ("智能配件".equals(category)) {
+            return ACCESSORY_PRODUCT_IMAGE;
+        }
+        return DEFAULT_PRODUCT_IMAGE;
     }
 
     private void generateLoginLogs(List<User> users) {

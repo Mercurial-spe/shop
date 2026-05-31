@@ -18,6 +18,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableScheduling
 public class ShopBackendApplication {
 
+	private static final String DEFAULT_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80";
+	private static final String PHONE_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?auto=format&fit=crop&w=900&q=80";
+	private static final String LAPTOP_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=900&q=80";
+	private static final String ACCESSORY_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=900&q=80";
+	private static final String WEARABLE_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80";
+
 	public static void main(String[] args) {
 		SpringApplication.run(ShopBackendApplication.class, args);
 	}
@@ -52,8 +58,16 @@ public class ShopBackendApplication {
 				createProduct(productRepository, seller02, "Pocket Power Bank", "轻薄快充移动电源，低价高频消费品。", 159.00, 3, "智能配件");
 			} else {
 				productRepository.findAll().forEach(product -> {
+					boolean shouldSave = false;
 					if (product.getCategory() == null || product.getCategory().isBlank()) {
 						product.setCategory(inferCategory(product.getName()));
+						shouldSave = true;
+					}
+					if (usesLocalDemoImage(product.getImageUrl())) {
+						product.setImageUrl(defaultProductImage(product.getCategory()));
+						shouldSave = true;
+					}
+					if (shouldSave) {
 						productRepository.save(product);
 					}
 				});
@@ -90,7 +104,7 @@ public class ShopBackendApplication {
 		product.setDescription(description);
 		product.setPrice(price);
 		product.setCategory(category);
-		product.setImageUrl("/100191209_p0.jpg");
+		product.setImageUrl(defaultProductImage(category));
 		product.setStockQuantity(stock);
 		product.setSeller(seller);
 		productRepository.save(product);
@@ -111,5 +125,25 @@ public class ShopBackendApplication {
 			return "智能穿戴";
 		}
 		return "智能配件";
+	}
+
+	private boolean usesLocalDemoImage(String imageUrl) {
+		return imageUrl == null || imageUrl.isBlank() || imageUrl.startsWith("/");
+	}
+
+	private String defaultProductImage(String category) {
+		if ("手机数码".equals(category)) {
+			return PHONE_PRODUCT_IMAGE;
+		}
+		if ("电脑办公".equals(category)) {
+			return LAPTOP_PRODUCT_IMAGE;
+		}
+		if ("智能穿戴".equals(category)) {
+			return WEARABLE_PRODUCT_IMAGE;
+		}
+		if ("智能配件".equals(category)) {
+			return ACCESSORY_PRODUCT_IMAGE;
+		}
+		return DEFAULT_PRODUCT_IMAGE;
 	}
 }

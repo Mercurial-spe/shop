@@ -20,6 +20,8 @@ import java.util.Map;
 @Service
 public class CsvImportService {
 
+    private static final String DEFAULT_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80";
+
     private static final List<String> EXPECTED_HEADER = List.of("商品名称", "类别", "价格", "库存", "描述", "图片链接");
 
     @Autowired
@@ -102,7 +104,7 @@ public class CsvImportService {
         product.setPrice(price);
         product.setStockQuantity(stock);
         product.setDescription(description.isBlank() ? name : description);
-        product.setImageUrl(imageUrl.isBlank() ? "/100191209_p0.jpg" : imageUrl);
+        product.setImageUrl(imageUrl.isBlank() ? DEFAULT_PRODUCT_IMAGE : imageUrl);
         return product;
     }
 

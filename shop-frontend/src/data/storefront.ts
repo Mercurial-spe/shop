@@ -1,6 +1,9 @@
 import type { Product } from '../types/Product';
 import type { DemoCredential, ProductForm } from '../types/app';
 
+export const DEFAULT_PRODUCT_IMAGE =
+  'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80';
+
 export const FALLBACK_PRODUCTS: Product[] = [
   {
     id: 1001,
@@ -9,7 +12,7 @@ export const FALLBACK_PRODUCTS: Product[] = [
     price: 6999,
     category: '手机数码',
     stockQuantity: 42,
-    imageUrl: '/100191209_p0.jpg',
+    imageUrl: 'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?auto=format&fit=crop&w=900&q=80',
     seller: { id: 2, username: 'seller01' },
   },
   {
@@ -19,7 +22,7 @@ export const FALLBACK_PRODUCTS: Product[] = [
     price: 8299,
     category: '电脑办公',
     stockQuantity: 28,
-    imageUrl: '/100191209_p0.jpg',
+    imageUrl: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=900&q=80',
     seller: { id: 2, username: 'seller01' },
   },
   {
@@ -29,7 +32,7 @@ export const FALLBACK_PRODUCTS: Product[] = [
     price: 1299,
     category: '智能配件',
     stockQuantity: 96,
-    imageUrl: '/100191209_p0.jpg',
+    imageUrl: 'https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=900&q=80',
     seller: { id: 2, username: 'seller01' },
   },
   {
@@ -39,7 +42,7 @@ export const FALLBACK_PRODUCTS: Product[] = [
     price: 1899,
     category: '智能穿戴',
     stockQuantity: 35,
-    imageUrl: '/100191209_p0.jpg',
+    imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80',
     seller: { id: 3, username: 'seller02' },
   },
 ];
@@ -56,5 +59,5 @@ export const emptyProductForm: ProductForm = {
   price: '199',
   category: '智能配件',
   stockQuantity: '20',
-  imageUrl: '/100191209_p0.jpg',
+  imageUrl: DEFAULT_PRODUCT_IMAGE,
 };
