@@ -42,7 +42,7 @@ Mercurial's Shop 是一个完整的电商演示系统，覆盖顾客购物、销
 
 系统架构：
 
-![系统架构图](images/system_architecture.png)
+![系统架构图](images/system_architecture.svg)
 
 顾客商品与推荐页面：
 
