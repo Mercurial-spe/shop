@@ -3195,6 +3195,26 @@ tr:last-child td {
   border-radius: 8px;
 }
 
+.cell-product .product-figure::before {
+  display: none;
+}
+
+.cell-product .product-figure img {
+  opacity: 1;
+  mix-blend-mode: normal;
+}
+
+.cell-product .product-figure span {
+  width: 100%;
+  height: 100%;
+  border-color: rgb(23 22 20 / 14%);
+  color: var(--teal-dark);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: none;
+}
+
 .cell-product > span {
   font-weight: 700;
 }

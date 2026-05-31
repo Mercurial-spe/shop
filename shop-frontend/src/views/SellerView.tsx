@@ -183,7 +183,7 @@ export function SellerView({
                     <tr key={product.id}>
                       <td>
                         <div className="cell-product">
-                          <ProductFigure product={product} />
+                          <ProductFigure product={product} compact />
                           <span>{product.name}</span>
                         </div>
                       </td>

@@ -41,7 +41,7 @@ public class OrderService {
 
     public List<Order> getOrdersByUser(Long userId) {
         User user = accessControlService.requireCustomer(userId);
-        return orderRepository.findByUser(user);
+        return orderRepository.findByUserOrderByCreatedAtDesc(user);
     }
 
     public Order getOrderForUser(Long orderId, Long userId) {
@@ -55,7 +55,7 @@ public class OrderService {
 
     public List<OrderItem> getOrdersBySeller(Long sellerId) {
         User seller = accessControlService.requireSeller(sellerId);
-        return orderItemRepository.findBySeller(seller);
+        return orderItemRepository.findBySellerOrderByOrderCreatedAtDesc(seller);
     }
 
     @Transactional
@@ -142,7 +142,7 @@ public class OrderService {
 
     public Map<String, Object> getSellerStats(Long sellerId) {
         User seller = accessControlService.requireSeller(sellerId);
-        List<OrderItem> items = orderItemRepository.findBySeller(seller).stream()
+        List<OrderItem> items = orderItemRepository.findBySellerOrderByOrderCreatedAtDesc(seller).stream()
                 .filter(item -> item.getOrder().getStatus() != OrderStatus.PENDING_PAYMENT)
                 .collect(Collectors.toList());
 

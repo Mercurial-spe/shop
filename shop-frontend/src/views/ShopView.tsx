@@ -86,9 +86,6 @@ export function ShopView({
               <button className="primary-button" type="button" onClick={() => leadProduct && onInspect(leadProduct)}>
                 查看主推
               </button>
-              <button className="secondary-button" type="button" onClick={() => onCategory('全部')}>
-                逛全部
-              </button>
             </div>
           </div>
           <div className="promo-stack">

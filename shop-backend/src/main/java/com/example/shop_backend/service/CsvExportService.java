@@ -85,8 +85,7 @@ public class CsvExportService {
     public String sellerOrdersReport(Long sellerId) {
         User seller = accessControlService.requireSeller(sellerId);
         StringBuilder csv = newCsv("订单ID", "订单状态", "下单时间", "支付时间", "买家", "商品ID", "商品名称", "单价", "数量", "金额");
-        orderItemRepository.findBySeller(seller).stream()
-                .sorted(Comparator.comparing((OrderItem item) -> item.getOrder().getCreatedAt(), Comparator.nullsLast(Comparator.reverseOrder())))
+        orderItemRepository.findBySellerOrderByOrderCreatedAtDesc(seller).stream()
                 .forEach(item -> {
                     Order order = item.getOrder();
                     appendRow(

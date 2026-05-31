@@ -36,6 +36,11 @@ import { OrdersView } from './views/OrdersView';
 import { SellerView } from './views/SellerView';
 import { ShopView } from './views/ShopView';
 
+const timestamp = (value?: string) => {
+  const parsed = Date.parse(value ?? '');
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+
 function App() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -305,7 +310,8 @@ function App() {
 
   const loadOrders = async (userId: number) => {
     try {
-      setOrders((await apiService.getOrdersByUser(userId)) as Order[]);
+      const nextOrders = (await apiService.getOrdersByUser(userId)) as Order[];
+      setOrders([...nextOrders].sort((a, b) => timestamp(b.createdAt) - timestamp(a.createdAt)));
     } catch (error) {
       reportError(error, '订单加载失败。');
     }
@@ -340,7 +346,11 @@ function App() {
         apiService.getSellerPurchaseLogs(sellerId),
       ]);
       setSellerProducts(ownedProducts);
-      setSellerOrders(orderItems as SellerOrderItem[]);
+      setSellerOrders(
+        [...(orderItems as SellerOrderItem[])].sort(
+          (a, b) => timestamp(b.orderCreatedAt) - timestamp(a.orderCreatedAt),
+        ),
+      );
       setSellerStats(stats as SellerStats);
       setCategories(nextCategories);
       setSellerBrowseLogs(browseLogs as SellerBrowseLog[]);
